@@ -3233,4 +3233,8 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get controlNotReady => '从电脑控制已不可用。请在 Linksy 的权限中检查。';
+
+  @override
+  String get controlStatusUnconfigured =>
+      '此版本不可用。从电脑控制需要为特定的 Linksy Control 应用构建的版本，以及 Android 9 或更高版本。';
 }

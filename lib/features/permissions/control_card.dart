@@ -11,8 +11,8 @@ import '../../ui/sig.dart';
 /// Where the companion app's page explains how to install it.
 const controlCompanionUrl = 'https://github.com/bearyjd/linksy-control';
 
-/// Where the user is in setting up Control from your computer: the separate
-/// companion app, its Accessibility switch (Android makes the user turn it on
+/// Where the user is in setting up Control from your computer: whether this
+/// build can work with a companion at all, the separate companion app, its Accessibility switch (Android makes the user turn it on
 /// themselves), one pairing.
 enum ControlStep { off, unconfigured, install, accessibility, pair, ready, active }
 
@@ -22,6 +22,7 @@ ControlStep controlStep({
   required bool active,
 }) {
   if (!on) return ControlStep.off;
+  if (!state.configured) return ControlStep.unconfigured;
   if (!state.installed) return ControlStep.install;
   if (!state.accessibility) return ControlStep.accessibility;
   if (!state.paired) return ControlStep.pair;
@@ -56,11 +57,11 @@ class _ControlCardState extends State<ControlCard> {
     final step = controlStep(
       on: c.controlOn,
       state: c.companion,
-      active: c.controlling,
+      active: c.controlBridged,
     );
     final status = switch (step) {
       ControlStep.off => null,
-      ControlStep.unconfigured => 'Not available in this build.',
+      ControlStep.unconfigured => l.controlStatusUnconfigured,
       ControlStep.install => l.controlStatusInstall,
       ControlStep.accessibility => l.controlStatusAccessibility,
       ControlStep.pair => l.controlStatusPair,

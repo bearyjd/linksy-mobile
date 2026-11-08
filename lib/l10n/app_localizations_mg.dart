@@ -3389,4 +3389,8 @@ class AppLocalizationsMg extends AppLocalizations {
   @override
   String get controlNotReady =>
       'Tsy vonona intsony ny fanaraha-maso avy amin’ny solosaina. Jereo ao amin’ny alalana an’i Linksy.';
+
+  @override
+  String get controlStatusUnconfigured =>
+      'Tsy azo ampiasaina amin’ity dikan-tsary ity. Ny fanaraha-maso avy amin’ny solosaina dia mitaky dikan-tsary natao ho an’ny rindranasa Linksy Control iray manokana, sy Android 9 na vao haingana kokoa.';
 }

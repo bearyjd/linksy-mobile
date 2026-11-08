@@ -3287,4 +3287,8 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get controlNotReady => 'パソコンからの操作は準備ができていません。Linksy の権限で確認してください。';
+
+  @override
+  String get controlStatusUnconfigured =>
+      'このビルドでは利用できません。パソコンからの操作には、特定の Linksy Control アプリ用に作られたビルドと、Android 9 以降が必要です。';
 }

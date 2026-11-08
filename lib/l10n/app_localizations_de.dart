@@ -3379,4 +3379,8 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get controlNotReady =>
       'Die Steuerung vom Computer ist nicht mehr bereit. Prüfe sie in den Berechtigungen von Linksy.';
+
+  @override
+  String get controlStatusUnconfigured =>
+      'In dieser Version nicht verfügbar. Die Steuerung vom Computer braucht eine Version, die für eine bestimmte Linksy-Control-App gebaut wurde, und Android 9 oder neuer.';
 }

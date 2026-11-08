@@ -5585,6 +5585,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Control from your computer isn’t ready any more. Open Linksy’s permissions to check it.'**
   String get controlNotReady;
+
+  /// Control from your computer: the Linksy Control companion app.
+  ///
+  /// In en, this message translates to:
+  /// **'Not available in this build. Control from your computer needs a build made for one specific Linksy Control app, and Android 9 or newer.'**
+  String get controlStatusUnconfigured;
 }
 
 class _AppLocalizationsDelegate

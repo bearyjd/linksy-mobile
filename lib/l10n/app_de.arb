@@ -911,5 +911,6 @@
   "controlStatusReady": "Bereit. Wenn dein Computer dieses Telefon steuern möchte, erlaube es.",
   "controlStatusActive": "Dein Computer steuert dieses Telefon. Beende es über die Benachrichtigung.",
   "controlRefusal": "Wenn dein Telefon die App nicht installiert oder das Einschalten nicht zulässt, schützt Android dich. Linksy verlangt nie, Play Protect auszuschalten oder etwas zu umgehen. Tippen vom Computer und Bildschirmansicht funktionieren weiterhin.",
-  "controlNotReady": "Die Steuerung vom Computer ist nicht mehr bereit. Prüfe sie in den Berechtigungen von Linksy."
+  "controlNotReady": "Die Steuerung vom Computer ist nicht mehr bereit. Prüfe sie in den Berechtigungen von Linksy.",
+  "controlStatusUnconfigured": "In dieser Version nicht verfügbar. Die Steuerung vom Computer braucht eine Version, die für eine bestimmte Linksy-Control-App gebaut wurde, und Android 9 oder neuer."
 }

@@ -4275,5 +4275,7 @@
   "controlRefusal": "If your phone won’t install the app or won’t let you turn it on, that is Android protecting you. Linksy won’t ask you to turn off Play Protect or work around it. Typing from your computer and viewing your screen still work.",
   "@controlRefusal": {"description": "Control from your computer: the Linksy Control companion app."},
   "controlNotReady": "Control from your computer isn’t ready any more. Open Linksy’s permissions to check it.",
-  "@controlNotReady": {"description": "Control from your computer: the Linksy Control companion app."}
+  "@controlNotReady": {"description": "Control from your computer: the Linksy Control companion app."},
+  "controlStatusUnconfigured": "Not available in this build. Control from your computer needs a build made for one specific Linksy Control app, and Android 9 or newer.",
+  "@controlStatusUnconfigured": {"description": "Control from your computer: the Linksy Control companion app."}
 }

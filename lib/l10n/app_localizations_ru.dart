@@ -3405,4 +3405,8 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get controlNotReady =>
       'Управление с компьютера больше не готово. Проверьте в разрешениях Linksy.';
+
+  @override
+  String get controlStatusUnconfigured =>
+      'Недоступно в этой сборке. Управление с компьютера требует сборки, созданной для конкретного приложения Linksy Control, и Android 9 или новее.';
 }

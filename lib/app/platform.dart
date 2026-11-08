@@ -54,6 +54,7 @@ abstract final class LinksyPlatform {
   static final _transferAnswers = StreamController<(String, bool)>.broadcast();
   static final _usbPorts = StreamController<int>.broadcast();
   static final _controlsChanges = StreamController<void>.broadcast();
+  static final _controlChanges = StreamController<void>.broadcast();
   static final _screenRotations = StreamController<(String, int)>.broadcast();
   static final _networkChanges = StreamController<void>.broadcast();
 
@@ -132,6 +133,8 @@ abstract final class LinksyPlatform {
           _transferAnswers.add((a['transfer'] as String, a['accept'] == true));
         case 'volumeKey' when call.arguments is String:
           _volumeKeys.add(call.arguments == 'up');
+        case 'controlChanged':
+          _controlChanges.add(null);
         case 'controlsChanged':
           _controlsChanges.add(null);
         case 'screenRotation' when call.arguments is Map:
@@ -548,6 +551,13 @@ abstract final class LinksyPlatform {
   /// Tells [controlsChanges] about changes, by the phone's own buttons too.
   static Future<void> controlsWatch({required bool on}) =>
       _call<void>('controlsWatch', on);
+
+  /// The control bridge went up, down or failed (or the companion's state
+  /// changed under it): read [controlState] again.
+  static Stream<void> get controlChanges {
+    _listen();
+    return _controlChanges.stream;
+  }
 
   static Stream<void> get controlsChanges {
     _listen();

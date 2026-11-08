@@ -293,6 +293,7 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
   final _controlWatchers = <String>{};
   Timer? _controlsSoon;
   StreamSubscription<void>? _controlsSub;
+  StreamSubscription<void>? _controlSub;
 
   /// Android lets a computer change Do Not Disturb here.
   bool dndAccess = false;
@@ -417,26 +418,36 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
   );
 
   bool get companionReady =>
-      companion.installed && companion.accessibility && companion.paired;
+      companion.configured &&
+      companion.installed &&
+      companion.accessibility &&
+      companion.paired;
 
-  /// A computer is controlling this phone's screen now.
+  /// A computer's control session is running on this phone.
   bool get controlling =>
       sharing.values.any((s) => s.kind == SessionKind.control);
 
+  /// ... and the companion is carrying its input (not only the screen share).
+  bool get controlBridged => controlling && companion.bridged;
+
   Future<void> setControl(bool on) async {
     await _setPref('control', on ? 'on' : null);
-    // Off ends every control session now: Stop, the bridge's END and unbind.
-    if (!on) {
-      for (final id in [
-        for (final e in sharing.entries)
-          if (e.value.kind == SessionKind.control) e.key,
-      ]) {
-        await stopSharing(id);
+    try {
+      // Off ends every control session now: Stop, the bridge's END and unbind.
+      if (!on) {
+        for (final id in [
+          for (final e in sharing.entries)
+            if (e.value.kind == SessionKind.control) e.key,
+        ]) {
+          await stopSharing(id);
+        }
       }
+    } finally {
+      // Whatever happened above, the card and what is announced follow.
+      companion = await LinksyPlatform.controlState();
+      notifyListeners();
+      await _announce();
     }
-    companion = await LinksyPlatform.controlState();
-    notifyListeners();
-    await _announce();
   }
 
   /// Read again, after Android's settings, the pairing or coming back to the
@@ -947,6 +958,9 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
     _usbSub = LinksyPlatform.usbPorts.listen(_onUsb);
     _controlsSub = LinksyPlatform.controlsChanges.listen(
       (_) => _controlsMoved(),
+    );
+    _controlSub = LinksyPlatform.controlChanges.listen(
+      (_) => unawaited(refreshControl()),
     );
     LinksyPlatform.screenRotations.listen(_onRotation);
     unawaited(_readCamera());
@@ -3145,6 +3159,7 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
     _mediaActionSub?.cancel();
     LinksyPlatform.mediaNotice(null);
     _controlsSub?.cancel();
+    _controlSub?.cancel();
     _controlsSoon?.cancel();
     _usbSub?.cancel();
     _logSub?.cancel();

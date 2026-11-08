@@ -911,5 +911,6 @@
   "controlStatusReady": "已就绪。当电脑请求控制这部手机时，请允许。",
   "controlStatusActive": "电脑正在控制这部手机。可从通知中停止。",
   "controlRefusal": "如果手机不让你安装该应用或开启它，那是 Android 在保护你。Linksy 不会要求你关闭 Play Protect 或绕过任何限制。从电脑输入和查看屏幕仍然可用。",
-  "controlNotReady": "从电脑控制已不可用。请在 Linksy 的权限中检查。"
+  "controlNotReady": "从电脑控制已不可用。请在 Linksy 的权限中检查。",
+  "controlStatusUnconfigured": "此版本不可用。从电脑控制需要为特定的 Linksy Control 应用构建的版本，以及 Android 9 或更高版本。"
 }

@@ -911,5 +911,6 @@
   "controlStatusReady": "Prêt. Quand ton ordinateur demande à contrôler ce téléphone, autorise-le.",
   "controlStatusActive": "Ton ordinateur contrôle ce téléphone. Arrête-le depuis la notification.",
   "controlRefusal": "Si ton téléphone refuse d’installer l’appli ou de l’activer, c’est Android qui te protège. Linksy ne te demandera jamais de désactiver Play Protect ni de contourner quoi que ce soit. La saisie depuis l’ordinateur et l’affichage de ton écran continuent de fonctionner.",
-  "controlNotReady": "Le contrôle depuis l’ordinateur n’est plus prêt. Vérifie-le dans les autorisations de Linksy."
+  "controlNotReady": "Le contrôle depuis l’ordinateur n’est plus prêt. Vérifie-le dans les autorisations de Linksy.",
+  "controlStatusUnconfigured": "Indisponible dans cette version. Le contrôle depuis l’ordinateur demande une version conçue pour une application Linksy Control précise, et Android 9 ou plus récent."
 }
