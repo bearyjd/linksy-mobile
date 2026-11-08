@@ -37,6 +37,7 @@ sealed interface ControlMsg {
 
         /// Null for a type this phone doesn't act on, and for anything malformed.
         fun parse(json: String): ControlMsg? {
+            if (!JsonShape.withinDepth(json)) return null
             val o = try {
                 JSONObject(json)
             } catch (_: JSONException) {

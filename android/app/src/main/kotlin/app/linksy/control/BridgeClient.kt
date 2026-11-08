@@ -64,11 +64,7 @@ class BridgeClient(
 
     fun stop() {
         if (state == State.Stopped) return
-        if (state == State.Active) {
-            for (b in heldButtons) link.inject(ControlMsg.Button(b, false).toJson())
-            for (k in heldKeys) link.inject(ControlMsg.Key(k, false).toJson())
-            link.end()
-        }
+        if (state == State.Active) releaseAndEnd()
         link.unbind()
         reset()
         state = State.Stopped
@@ -80,7 +76,10 @@ class BridgeClient(
         begin(renew = false)
     }
 
-    fun onUntrusted() {}
+    /// The companion is not the one this build trusts: never begin.
+    fun onUntrusted() {
+        if (state == State.Binding) fail(FailReason.Setup)
+    }
 
     fun onBindFailed() {
         if (state == State.Binding) retry()
@@ -121,6 +120,12 @@ class BridgeClient(
             if (state == State.Waiting) bind() else retry()
         }
         if (state == State.Active) pump()
+    }
+
+    private fun releaseAndEnd() {
+        for (b in heldButtons) link.inject(ControlMsg.Button(b, false).toJson())
+        for (k in heldKeys) link.inject(ControlMsg.Key(k, false).toJson())
+        link.end()
     }
 
     private fun bind() {
@@ -205,19 +210,24 @@ class BridgeClient(
             return
         }
         if (queue.size >= QUEUE_MAX) {
-            val move = queue.indexOfFirst { it is ControlMsg.Pointer }
-            if (move >= 0) {
-                queue.removeAt(move)
-            } else if (msg.releases) {
-                val other = queue.indexOfFirst { !it.releases }
-                if (other < 0) return
-                queue.removeAt(other)
-            } else {
-                return
-            }
+            // Pointer moves go first; for a release, then anything that is not
+            // one, then a release nothing is held for. At most a few dozen
+            // releases are ever needed, so one of those is always there.
+            val victim = queue.indexOfFirst { it is ControlMsg.Pointer }.takeIf { it >= 0 }
+                ?: if (msg.releases) {
+                    queue.indexOfFirst { !it.releases }.takeIf { it >= 0 }
+                        ?: queue.indexOfFirst { it.releases && !holds(it) }
+                } else {
+                    -1
+                }
+            if (victim >= 0) queue.removeAt(victim) else if (!msg.releases) return
         }
         queue.addLast(msg)
     }
+
+    private fun holds(release: ControlMsg) =
+        (release is ControlMsg.Button && release.button in heldButtons) ||
+            (release is ControlMsg.Key && release.keysym in heldKeys)
 
     private fun pump() {
         val now = clock()
@@ -237,7 +247,17 @@ class BridgeClient(
     private fun transmit(msg: ControlMsg) {
         when (msg) {
             is ControlMsg.Button -> if (msg.pressed) heldButtons += msg.button else heldButtons -= msg.button
-            is ControlMsg.Key -> if (msg.pressed) heldKeys += msg.keysym else heldKeys -= msg.keysym
+            is ControlMsg.Key -> if (msg.pressed) {
+                if (msg.keysym !in heldKeys && heldKeys.size >= MAX_HELD_KEYS) {
+                    // A computer holding this many keys is not typing.
+                    releaseAndEnd()
+                    fail(FailReason.TooManyKeys)
+                    return
+                }
+                heldKeys += msg.keysym
+            } else {
+                heldKeys -= msg.keysym
+            }
             else -> Unit
         }
         lastSend = clock()
