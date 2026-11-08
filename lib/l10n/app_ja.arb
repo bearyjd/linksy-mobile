@@ -466,8 +466,6 @@
   "sharingControlRequestDetail": "停止するまで、{name} はこのスマートフォンの画面を見て、タップ、スワイプ、入力ができます。次に Android が確認を求めます。",
   "sharingCameraRequestTitle": "{name} があなたのカメラを使おうとしています",
   "sharingCameraRequestDetail": "停止するまで、{name} がこのスマートフォンのカメラをウェブカメラとして使います。使用中は Linksy でズーム、フォーカス、明るさ、レンズ、回転を調整できます。",
-  "sharingInputRequestTitle": "{name} がこのスマートフォンをタッチパッドとして使おうとしています",
-  "sharingInputRequestDetail": "想定外の要求です。コンピュータはこれを求めません。許可しないでください。",
   "sharingMicrophoneRequestTitle": "{name} があなたのマイクを使おうとしています",
   "sharingMicrophoneRequestDetail": "停止するまで、{name} はこのスマートフォンのマイクの音を、そのコンピュータのどのアプリでも使えるマイクとして受け取ります。次に Android が確認を求めます。",
   "sharingDisplayRequestTitle": "{name} がこの画面をセカンドディスプレイとして使おうとしています",

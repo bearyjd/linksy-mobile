@@ -1676,14 +1676,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String sharingInputRequestTitle(String name) {
-    return '$name 想把这部手机用作触控板';
-  }
-
-  @override
-  String get sharingInputRequestDetail => '异常请求：电脑不会这样请求。请不要允许。';
-
-  @override
   String sharingMicrophoneRequestTitle(String name) {
     return '$name 想使用你的麦克风';
   }

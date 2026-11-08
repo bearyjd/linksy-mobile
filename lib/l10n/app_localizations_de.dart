@@ -1739,15 +1739,6 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String sharingInputRequestTitle(String name) {
-    return '$name möchte dieses Handy als Touchpad nutzen';
-  }
-
-  @override
-  String get sharingInputRequestDetail =>
-      'Unerwartet: Computer fragen das nicht. Erlaube es nicht.';
-
-  @override
   String sharingMicrophoneRequestTitle(String name) {
     return '$name möchte dein Mikrofon nutzen';
   }

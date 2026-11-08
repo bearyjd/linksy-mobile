@@ -466,8 +466,6 @@
   "sharingControlRequestDetail": "Mahita ny efijerin'ity finday ity {name} ary afaka mikasika, mikosoka sy manoratra eo mandra-pampitsaharinao. Hangataka fanamafisana i Android avy eo.",
   "sharingCameraRequestTitle": "Te hampiasa ny fakantsarinao {name}",
   "sharingCameraRequestDetail": "Azon'i {name} ho webcam ny fakantsarin'ity finday ity mandra-pampitsaharinao. Ao amin'i Linksy ny zoom, fahazavan-tsary, hazavana, lantihy ary fihodinana mandritra izany.",
-  "sharingInputRequestTitle": "Te hampiasa ity finday ity ho touchpad {name}",
-  "sharingInputRequestDetail": "Tsy nampoizina: tsy mangataka izany ny solosaina. Aza avela.",
   "sharingMicrophoneRequestTitle": "Te hampiasa ny mikrônao {name}",
   "sharingMicrophoneRequestDetail": "Mandre ny mikrôn'ity finday ity {name} mandra-pampitsaharinao, ho mikrô azon'ny app rehetra ao aminy ampiasaina. Hangataka fanamafisana i Android avy eo.",
   "sharingDisplayRequestTitle": "Te hampiasa ity efijery ity ho efijery faharoa {name}",

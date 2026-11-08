@@ -466,8 +466,6 @@
   "sharingControlRequestDetail": "{name} видит экран этого телефона и может нажимать, проводить и печатать на нём, пока вы не остановите. Далее Android попросит подтвердить.",
   "sharingCameraRequestTitle": "{name} хочет использовать вашу камеру",
   "sharingCameraRequestDetail": "{name} получает камеру этого телефона как веб-камеру, пока вы не остановите. Масштаб, фокус, свет, объективы и поворот — в Linksy, пока она работает.",
-  "sharingInputRequestTitle": "{name} хочет использовать этот телефон как тачпад",
-  "sharingInputRequestDetail": "Странно: компьютеры такое не запрашивают. Не разрешайте.",
   "sharingMicrophoneRequestTitle": "{name} хочет использовать ваш микрофон",
   "sharingMicrophoneRequestDetail": "{name} слышит микрофон этого телефона, пока вы не остановите, — как микрофон для любых его приложений. Далее Android попросит подтвердить.",
   "sharingDisplayRequestTitle": "{name} хочет использовать этот экран как второй дисплей",

@@ -882,6 +882,10 @@ abstract final class LinksyPlatform {
   static Future<void> startTyping(String session, String peer) =>
       _call<void>('startTyping', {'session': session, 'peer': peer});
 
+  /// Ends every typing session on this phone at once, dropping what Android
+  /// has queued but not typed (the Linksy Keyboard card turned off).
+  static Future<void> stopTyping() => _call<void>('stopTyping');
+
   /// Whether Linksy Keyboard is turned on in Android's settings, is the
   /// keyboard in use, and whether a computer is typing through it now.
   static Future<({bool enabled, bool current, bool typing})>

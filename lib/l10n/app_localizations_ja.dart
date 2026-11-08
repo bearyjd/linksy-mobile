@@ -1696,15 +1696,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String sharingInputRequestTitle(String name) {
-    return '$name がこのスマートフォンをタッチパッドとして使おうとしています';
-  }
-
-  @override
-  String get sharingInputRequestDetail =>
-      '想定外の要求です。コンピュータはこれを求めません。許可しないでください。';
-
-  @override
   String sharingMicrophoneRequestTitle(String name) {
     return '$name があなたのマイクを使おうとしています';
   }

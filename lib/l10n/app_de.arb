@@ -466,8 +466,6 @@
   "sharingControlRequestDetail": "{name} sieht den Bildschirm dieses Handys und kann darauf tippen, wischen und schreiben, bis du beendest. Android fragt gleich nach einer Bestätigung.",
   "sharingCameraRequestTitle": "{name} möchte deine Kamera nutzen",
   "sharingCameraRequestDetail": "{name} bekommt die Kamera dieses Handys als Webcam, bis du beendest. Zoom, Fokus, Licht, Objektive und Drehung findest du währenddessen in Linksy.",
-  "sharingInputRequestTitle": "{name} möchte dieses Handy als Touchpad nutzen",
-  "sharingInputRequestDetail": "Unerwartet: Computer fragen das nicht. Erlaube es nicht.",
   "sharingMicrophoneRequestTitle": "{name} möchte dein Mikrofon nutzen",
   "sharingMicrophoneRequestDetail": "{name} hört das Mikrofon dieses Handys, bis du beendest – als Mikrofon, das jede App dort nutzen kann. Android fragt gleich nach einer Bestätigung.",
   "sharingDisplayRequestTitle": "{name} möchte diesen Bildschirm als zweiten Bildschirm nutzen",

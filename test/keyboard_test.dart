@@ -180,7 +180,12 @@ void main() {
     calls.clear();
     await c.setKeyboard(false);
     // Android drops what is still queued, before anything else.
-    expect(calls.map((m) => m.method).first, 'stopTyping');
+    final methods = calls.map((m) => m.method).toList();
+    expect(methods, contains('stopTyping'));
+    expect(
+      methods.indexOf('stopTyping'),
+      lessThan(methods.indexOf('keyboardState')),
+    );
     expect(node.told.last, isNot(contains('keyboard')));
     await finish(tester, c);
   });

@@ -1744,15 +1744,6 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String sharingInputRequestTitle(String name) {
-    return '$name quiere usar este teléfono como touchpad';
-  }
-
-  @override
-  String get sharingInputRequestDetail =>
-      'Inesperado: las computadoras no piden esto. No lo permitas.';
-
-  @override
   String sharingMicrophoneRequestTitle(String name) {
     return '$name quiere usar tu micrófono';
   }

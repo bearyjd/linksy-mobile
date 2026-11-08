@@ -1745,15 +1745,6 @@ class AppLocalizationsMg extends AppLocalizations {
   }
 
   @override
-  String sharingInputRequestTitle(String name) {
-    return 'Te hampiasa ity finday ity ho touchpad $name';
-  }
-
-  @override
-  String get sharingInputRequestDetail =>
-      'Tsy nampoizina: tsy mangataka izany ny solosaina. Aza avela.';
-
-  @override
   String sharingMicrophoneRequestTitle(String name) {
     return 'Te hampiasa ny mikrônao $name';
   }

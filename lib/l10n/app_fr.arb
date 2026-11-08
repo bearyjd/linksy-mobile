@@ -466,8 +466,6 @@
   "sharingControlRequestDetail": "{name} voit l’écran de ce téléphone et peut toucher, balayer et taper dessus jusqu’à ce que vous arrêtiez. Android vous demandera ensuite de confirmer.",
   "sharingCameraRequestTitle": "{name} veut utiliser votre caméra",
   "sharingCameraRequestDetail": "{name} utilise la caméra de ce téléphone comme webcam jusqu’à ce que vous arrêtiez. Zoom, mise au point, lumière, objectifs et rotation se règlent dans Linksy pendant ce temps.",
-  "sharingInputRequestTitle": "{name} veut utiliser ce téléphone comme pavé tactile",
-  "sharingInputRequestDetail": "Inattendu : les ordinateurs ne demandent pas cela. Ne l’autorisez pas.",
   "sharingMicrophoneRequestTitle": "{name} veut utiliser votre micro",
   "sharingMicrophoneRequestDetail": "{name} entend le micro de ce téléphone jusqu’à ce que vous arrêtiez, comme un micro que toutes ses apps peuvent utiliser. Android vous demandera ensuite de confirmer.",
   "sharingDisplayRequestTitle": "{name} veut utiliser cet écran comme second écran",

@@ -1746,15 +1746,6 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String sharingInputRequestTitle(String name) {
-    return '$name veut utiliser ce téléphone comme pavé tactile';
-  }
-
-  @override
-  String get sharingInputRequestDetail =>
-      'Inattendu : les ordinateurs ne demandent pas cela. Ne l’autorisez pas.';
-
-  @override
   String sharingMicrophoneRequestTitle(String name) {
     return '$name veut utiliser votre micro';
   }

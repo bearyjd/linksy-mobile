@@ -2913,18 +2913,6 @@ abstract class AppLocalizations {
   /// Request dialog title; name is a computer
   ///
   /// In en, this message translates to:
-  /// **'{name} wants to use this phone as a touchpad'**
-  String sharingInputRequestTitle(String name);
-
-  /// Touchpad request warning
-  ///
-  /// In en, this message translates to:
-  /// **'Unexpected: computers don’t ask this. Don’t allow it.'**
-  String get sharingInputRequestDetail;
-
-  /// Request dialog title; name is a computer
-  ///
-  /// In en, this message translates to:
   /// **'{name} wants to use your microphone'**
   String sharingMicrophoneRequestTitle(String name);
 

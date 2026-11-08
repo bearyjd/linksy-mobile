@@ -466,8 +466,6 @@
   "sharingControlRequestDetail": "{name} vê a tela deste celular e pode tocar, deslizar e digitar nela até você parar. O Android pede sua confirmação em seguida.",
   "sharingCameraRequestTitle": "{name} quer usar sua câmera",
   "sharingCameraRequestDetail": "{name} recebe a câmera deste celular como webcam até você parar. Zoom, foco, luz, lentes e rotação ficam no Linksy enquanto ela estiver ativa.",
-  "sharingInputRequestTitle": "{name} quer usar este celular como touchpad",
-  "sharingInputRequestDetail": "Inesperado: computadores não pedem isso. Não permita.",
   "sharingMicrophoneRequestTitle": "{name} quer usar seu microfone",
   "sharingMicrophoneRequestDetail": "{name} ouve o microfone deste celular até você parar, como um microfone que qualquer app dele pode usar. O Android pede sua confirmação em seguida.",
   "sharingDisplayRequestTitle": "{name} quer usar esta tela como segunda tela",

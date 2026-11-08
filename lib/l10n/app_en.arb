@@ -2339,19 +2339,6 @@
       }
     }
   },
-  "sharingInputRequestTitle": "{name} wants to use this phone as a touchpad",
-  "@sharingInputRequestTitle": {
-    "description": "Request dialog title; name is a computer",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "sharingInputRequestDetail": "Unexpected: computers don’t ask this. Don’t allow it.",
-  "@sharingInputRequestDetail": {
-    "description": "Touchpad request warning"
-  },
   "sharingMicrophoneRequestTitle": "{name} wants to use your microphone",
   "@sharingMicrophoneRequestTitle": {
     "description": "Request dialog title; name is a computer",

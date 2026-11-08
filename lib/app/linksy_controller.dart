@@ -386,7 +386,10 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<void> setKeyboard(bool on) async {
     await _setPref('keyboard', on ? 'on' : null);
-    await refreshKeyboard();
+    // Off: what Android still has queued must not be typed.
+    if (!on) await LinksyPlatform.stopTyping();
+    keyboard = await LinksyPlatform.keyboardState();
+    notifyListeners();
     await _announce();
   }
 
@@ -397,12 +400,6 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
     keyboard = await LinksyPlatform.keyboardState();
     if (keyboard.enabled != before) await _announce();
     notifyListeners();
-  }
-
-  Future<void> stopTyping(String session) async {
-    typing.remove(session);
-    notifyListeners();
-    await node.endSession(session);
   }
 
   /// A computer's snap: the camera is allowed here.

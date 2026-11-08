@@ -1762,15 +1762,6 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String sharingInputRequestTitle(String name) {
-    return '$name хочет использовать этот телефон как тачпад';
-  }
-
-  @override
-  String get sharingInputRequestDetail =>
-      'Странно: компьютеры такое не запрашивают. Не разрешайте.';
-
-  @override
   String sharingMicrophoneRequestTitle(String name) {
     return '$name хочет использовать ваш микрофон';
   }
