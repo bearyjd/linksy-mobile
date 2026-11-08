@@ -18,15 +18,16 @@ class RustNode implements LinksyNode {
         .map((raw) {
           final j = jsonDecode(raw) as Json;
           final event = eventFromJson(j);
-          // Being controlled needs an accessibility service on Android, which
-          // gets sideloaded apps blocked at install; this phone doesn't offer
-          // it. That, or a kind this app doesn't know: say "can't" straight
-          // away rather than leave the other device waiting.
+          // Being controlled needs the Linksy Control companion (an
+          // accessibility service in its own app, which this one never
+          // contains); until that is installed, paired and on, this phone
+          // doesn't offer it. That, or a kind this app doesn't know: say
+          // "can't" straight away rather than leave the other device waiting.
           // `input` is a computer typing on this phone (Linksy Keyboard); the
           // core already turns it away unless that is on.
           if (j['type'] == 'session_request' &&
               (event == null ||
-                  j['kind'] == 'control' ||
+                  (j['kind'] == 'control' && !_controllable) ||
                   (j['kind'] == 'input' && !_typing))) {
             _node.declineUnsupported(request: j['request'] as String);
             return null;
@@ -43,6 +44,9 @@ class RustNode implements LinksyNode {
 
   /// This phone says it takes typing (the `keyboard` feature).
   bool _typing = false;
+
+  /// This phone says it can be controlled (the `control` feature).
+  bool _controllable = false;
 
   /// Loads the native library and starts this phone's node. Identity and
   /// paired devices live in [dataDir], which must be app-private.
@@ -412,6 +416,7 @@ class RustNode implements LinksyNode {
   @override
   Future<void> setFeatures(List<String> features) {
     _typing = features.contains('keyboard');
+    _controllable = features.contains('control');
     return _node.setFeatures(features: features);
   }
 

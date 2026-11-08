@@ -3351,4 +3351,62 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get sharingTypeRequestDetail =>
       'Текст вводится в открытое поле через Linksy Keyboard, пока вы не остановите его в уведомлении.';
+
+  @override
+  String get controlCardTitle => 'Управление с компьютера';
+
+  @override
+  String get controlCardWhy =>
+      'Позволяет разрешённому компьютеру нажимать, смахивать и вводить текст на этом телефоне, пока он показывает ваш экран. Нужно отдельное приложение Linksy Control, которое Android считает службой специальных возможностей. Каждый раз спрашивает разрешения, а остановить можно из уведомления.';
+
+  @override
+  String get controlTurnOn => 'Включить';
+
+  @override
+  String get controlTurnOff => 'Выключить';
+
+  @override
+  String get controlHowToInstall => 'Как установить';
+
+  @override
+  String get controlOpenAccessibility =>
+      'Открыть настройки специальных возможностей';
+
+  @override
+  String get controlOpenAppInfo => 'Открыть сведения о приложении';
+
+  @override
+  String get controlPair => 'Связать с Linksy';
+
+  @override
+  String get controlStatusInstall =>
+      'Сначала установите приложение Linksy Control. Это отдельное приложение, как его установить, написано на его странице.';
+
+  @override
+  String get controlStatusAccessibility =>
+      'Включите Linksy Control в настройках специальных возможностей Android. Если переключатель неактивен, откройте сведения о приложении, затем меню ⋮ и выберите «Разрешить ограниченные настройки».';
+
+  @override
+  String get controlStatusPair =>
+      'Один раз подтвердите Linksy в приложении Linksy Control.';
+
+  @override
+  String get controlStatusReady =>
+      'Готово. Когда компьютер попросит управлять этим телефоном, разрешите.';
+
+  @override
+  String get controlStatusActive =>
+      'Компьютер управляет этим телефоном. Остановить можно из уведомления.';
+
+  @override
+  String get controlRefusal =>
+      'Если телефон не устанавливает приложение или не даёт его включить, это Android защищает вас. Linksy не будет просить отключать Play Protect или что-то обходить. Ввод с компьютера и просмотр экрана по-прежнему работают.';
+
+  @override
+  String get controlNotReady =>
+      'Управление с компьютера больше не готово. Проверьте в разрешениях Linksy.';
+
+  @override
+  String get controlStatusUnconfigured =>
+      'Недоступно в этой сборке. Управление с компьютера требует сборки, созданной для конкретного приложения Linksy Control, и Android 9 или новее.';
 }

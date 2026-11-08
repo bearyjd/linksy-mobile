@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
+import '../core/companion_state.dart';
 import '../core/models.dart';
 
 /// Something another app shared to Linksy: text (maybe a link) or files.
@@ -53,6 +54,7 @@ abstract final class LinksyPlatform {
   static final _transferAnswers = StreamController<(String, bool)>.broadcast();
   static final _usbPorts = StreamController<int>.broadcast();
   static final _controlsChanges = StreamController<void>.broadcast();
+  static final _controlChanges = StreamController<void>.broadcast();
   static final _screenRotations = StreamController<(String, int)>.broadcast();
   static final _networkChanges = StreamController<void>.broadcast();
 
@@ -131,6 +133,8 @@ abstract final class LinksyPlatform {
           _transferAnswers.add((a['transfer'] as String, a['accept'] == true));
         case 'volumeKey' when call.arguments is String:
           _volumeKeys.add(call.arguments == 'up');
+        case 'controlChanged':
+          _controlChanges.add(null);
         case 'controlsChanged':
           _controlsChanges.add(null);
         case 'screenRotation' when call.arguments is Map:
@@ -548,6 +552,13 @@ abstract final class LinksyPlatform {
   static Future<void> controlsWatch({required bool on}) =>
       _call<void>('controlsWatch', on);
 
+  /// The control bridge went up, down or failed (or the companion's state
+  /// changed under it): read [controlState] again.
+  static Stream<void> get controlChanges {
+    _listen();
+    return _controlChanges.stream;
+  }
+
   static Stream<void> get controlsChanges {
     _listen();
     return _controlsChanges.stream;
@@ -904,6 +915,30 @@ abstract final class LinksyPlatform {
 
   /// Android's "choose keyboard" picker.
   static Future<void> showKeyboardPicker() => _call<void>('showKeyboardPicker');
+
+  /// The Linksy Control companion app on this phone: whether it is installed,
+  /// turned on in Accessibility settings, and paired with Linksy.
+  static Future<CompanionState> controlState() async {
+    final m = await _call<Map<Object?, Object?>>('controlState');
+    return (
+      configured: m?['configured'] == true,
+      installed: m?['installed'] == true,
+      accessibility: m?['accessibility'] == true,
+      paired: m?['paired'] == true,
+      bridged: m?['bridged'] == true,
+    );
+  }
+
+  /// Android's Accessibility settings, where the companion is turned on.
+  static Future<void> openAccessibilitySettings() =>
+      _call<void>('openAccessibilitySettings');
+
+  /// The companion's App info, where "Allow restricted settings" is.
+  static Future<void> openCompanionInfo() => _call<void>('openCompanionInfo');
+
+  /// The companion's own pairing screen; true when the user approved.
+  static Future<bool> pairCompanion() async =>
+      await _call<bool>('pairCompanion') ?? false;
 
   /// Shares Android's service runs now: (session, kind, peer id). The app
   /// may have restarted while one went on.

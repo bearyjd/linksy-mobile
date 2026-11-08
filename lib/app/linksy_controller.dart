@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 
 import '../core/deck.dart';
 import '../core/deck_layouts.dart';
+import '../core/companion_state.dart';
 import '../core/linksy_node.dart';
 import 'app_log.dart';
 import '../core/models.dart';
@@ -292,6 +293,7 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
   final _controlWatchers = <String>{};
   Timer? _controlsSoon;
   StreamSubscription<void>? _controlsSub;
+  StreamSubscription<void>? _controlSub;
 
   /// Android lets a computer change Do Not Disturb here.
   bool dndAccess = false;
@@ -400,6 +402,67 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
     keyboard = await LinksyPlatform.keyboardState();
     if (keyboard.enabled != before) await _announce();
     notifyListeners();
+  }
+
+  /// A computer may take touch control of this phone (docs/android-app.md):
+  /// the user's switch. It also needs the companion app set up.
+  bool get controlOn => prefs['control'] == 'on';
+
+  /// What Android says about the Linksy Control companion now.
+  CompanionState companion = (
+    configured: false,
+    installed: false,
+    accessibility: false,
+    paired: false,
+    bridged: false,
+  );
+
+  bool get companionReady =>
+      companion.configured &&
+      companion.installed &&
+      companion.accessibility &&
+      companion.paired;
+
+  /// A computer's control session is running on this phone.
+  bool get controlling =>
+      sharing.values.any((s) => s.kind == SessionKind.control);
+
+  /// ... and the companion is carrying its input (not only the screen share).
+  bool get controlBridged => controlling && companion.bridged;
+
+  Future<void> setControl(bool on) async {
+    await _setPref('control', on ? 'on' : null);
+    try {
+      // Off ends every control session now: Stop, the bridge's END and unbind.
+      if (!on) {
+        for (final id in [
+          for (final e in sharing.entries)
+            if (e.value.kind == SessionKind.control) e.key,
+        ]) {
+          await stopSharing(id);
+        }
+      }
+    } finally {
+      // Whatever happened above, the card and what is announced follow.
+      companion = await LinksyPlatform.controlState();
+      notifyListeners();
+      await _announce();
+    }
+  }
+
+  /// Read again, after Android's settings, the pairing or coming back to the
+  /// app. Announced again when whether this phone can be controlled changed.
+  Future<void> refreshControl() async {
+    final before = companionReady;
+    companion = await LinksyPlatform.controlState();
+    if (companionReady != before) await _announce();
+    notifyListeners();
+  }
+
+  /// The companion's own screen asks once; RESULT_OK is the approval.
+  Future<void> pairCompanion() async {
+    await LinksyPlatform.pairCompanion();
+    await refreshControl();
   }
 
   /// A computer's snap: the camera is allowed here.
@@ -835,6 +898,7 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
       // Back from Notification access or App info, maybe.
       unawaited(refreshNotificationAccess());
       unawaited(refreshKeyboard());
+      unawaited(refreshControl());
       unawaited(_refreshGallery());
       unawaited(_moveLeftovers());
       _offerApps();
@@ -880,6 +944,7 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
     await LinksyPlatform.watchCalls(pauseOnCalls);
     await refreshNotificationAccess();
     await refreshKeyboard();
+    await refreshControl();
     await _refreshGallery();
     _accessRead.complete();
     unawaited(_moveLeftovers());
@@ -893,6 +958,9 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
     _usbSub = LinksyPlatform.usbPorts.listen(_onUsb);
     _controlsSub = LinksyPlatform.controlsChanges.listen(
       (_) => _controlsMoved(),
+    );
+    _controlSub = LinksyPlatform.controlChanges.listen(
+      (_) => unawaited(refreshControl()),
     );
     LinksyPlatform.screenRotations.listen(_onRotation);
     unawaited(_readCamera());
@@ -1532,6 +1600,7 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
       'sound',
       'computer_notifications',
       'keyboard',
+      'control',
     };
     return [
       ...node.info.features.where((f) => !changing.contains(f)),
@@ -1543,6 +1612,9 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
       if (computerNotifications) 'computer_notifications',
       // Only while it can work: the switch is on and Android has the keyboard.
       if (keyboardOn && keyboard.enabled) 'keyboard',
+      // Only while it can work: the switch is on, and the companion is
+      // installed, turned on in Accessibility and paired.
+      if (controlOn && companionReady) 'control',
     ];
   }
 
@@ -2175,6 +2247,11 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
         displays[session] = e;
         LinksyPlatform.keepScreenOn(session, on: true);
         _addSession(e);
+      // Control from a computer that arrives after the switch went off or the
+      // companion went away: end it, never start it.
+      case SessionStarted(:final session, kind: SessionKind.control)
+          when e.sharing && !(controlOn && companionReady):
+        unawaited(node.endSession(session).catchError((Object _) {}));
       // A computer typing on this phone: Android reads it for Linksy Keyboard.
       case SessionStarted(:final session, :final peer, kind: SessionKind.input)
           when e.sharing:
@@ -2452,6 +2529,8 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
         });
         if (sharing.remove(session) != null) {
           LinksyPlatform.stopShare(session);
+          // The companion may have said "not approved" during it.
+          unawaited(refreshControl());
           _update(session, (a) => a.status = ActivityStatus.done);
         }
         if (displays.remove(session) != null) {
@@ -2923,6 +3002,14 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
     if (accept) {
       switch (request.kind) {
         case SessionKind.screen || SessionKind.control:
+          if (request.kind == SessionKind.control) {
+            // The companion may have gone since this was announced.
+            await refreshControl();
+            if (!(controlOn && companionReady)) {
+              await node.declineUnsupported(request.request);
+              return tr.controlNotReady;
+            }
+          }
           allowed = await LinksyPlatform.requestScreenCapture(request.request);
           if (!allowed) {
             error = tr.ctlScreenPermission;
@@ -3072,6 +3159,7 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
     _mediaActionSub?.cancel();
     LinksyPlatform.mediaNotice(null);
     _controlsSub?.cancel();
+    _controlSub?.cancel();
     _controlsSoon?.cancel();
     _usbSub?.cancel();
     _logSub?.cancel();

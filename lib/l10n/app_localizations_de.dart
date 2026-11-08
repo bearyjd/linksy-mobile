@@ -3326,4 +3326,61 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get sharingTypeRequestDetail =>
       'Es tippt über Linksy Keyboard in das offene Feld, bis du es über die Benachrichtigung beendest.';
+
+  @override
+  String get controlCardTitle => 'Vom Computer aus steuern';
+
+  @override
+  String get controlCardWhy =>
+      'Lässt einen erlaubten Computer auf diesem Telefon tippen, wischen und schreiben, während er deinen Bildschirm zeigt. Dafür braucht es die separate App Linksy Control, die Android als Bedienungshilfe behandelt. Er fragt jedes Mal nach, und du kannst es über die Benachrichtigung beenden.';
+
+  @override
+  String get controlTurnOn => 'Einschalten';
+
+  @override
+  String get controlTurnOff => 'Ausschalten';
+
+  @override
+  String get controlHowToInstall => 'So installierst du sie';
+
+  @override
+  String get controlOpenAccessibility => 'Bedienungshilfen öffnen';
+
+  @override
+  String get controlOpenAppInfo => 'App-Info öffnen';
+
+  @override
+  String get controlPair => 'Mit Linksy koppeln';
+
+  @override
+  String get controlStatusInstall =>
+      'Installiere zuerst die App Linksy Control. Sie ist eine separate App, und ihre Seite erklärt, wie.';
+
+  @override
+  String get controlStatusAccessibility =>
+      'Schalte Linksy Control in den Bedienungshilfen von Android ein. Ist der Schalter ausgegraut, öffne die App-Info, dann das ⋮-Menü und wähle „Eingeschränkte Einstellungen zulassen“.';
+
+  @override
+  String get controlStatusPair =>
+      'Bestätige Linksy einmal in der App Linksy Control.';
+
+  @override
+  String get controlStatusReady =>
+      'Bereit. Wenn dein Computer dieses Telefon steuern möchte, erlaube es.';
+
+  @override
+  String get controlStatusActive =>
+      'Dein Computer steuert dieses Telefon. Beende es über die Benachrichtigung.';
+
+  @override
+  String get controlRefusal =>
+      'Wenn dein Telefon die App nicht installiert oder das Einschalten nicht zulässt, schützt Android dich. Linksy verlangt nie, Play Protect auszuschalten oder etwas zu umgehen. Tippen vom Computer und Bildschirmansicht funktionieren weiterhin.';
+
+  @override
+  String get controlNotReady =>
+      'Die Steuerung vom Computer ist nicht mehr bereit. Prüfe sie in den Berechtigungen von Linksy.';
+
+  @override
+  String get controlStatusUnconfigured =>
+      'In dieser Version nicht verfügbar. Die Steuerung vom Computer braucht eine Version, die für eine bestimmte Linksy-Control-App gebaut wurde, und Android 9 oder neuer.';
 }

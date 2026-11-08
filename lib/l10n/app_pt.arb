@@ -896,5 +896,21 @@
   "keyboardStatusSwitch": "Seu computador quer digitar. Troque para o Linksy Keyboard.",
   "keyboardStatusActive": "Seu computador está digitando pelo Linksy Keyboard. Troque de teclado para parar.",
   "sharingTypeRequestTitle": "{name} quer digitar neste celular",
-  "sharingTypeRequestDetail": "Ele digita no campo aberto, pelo Linksy Keyboard, até você parar pela notificação."
+  "sharingTypeRequestDetail": "Ele digita no campo aberto, pelo Linksy Keyboard, até você parar pela notificação.",
+  "controlCardTitle": "Controlar a partir do computador",
+  "controlCardWhy": "Permite que um computador autorizado toque, deslize e escreva neste telemóvel enquanto mostra o seu ecrã. Precisa da app separada Linksy Control, que o Android trata como um serviço de acessibilidade. Pergunta sempre e pode parar na notificação.",
+  "controlTurnOn": "Ativar",
+  "controlTurnOff": "Desativar",
+  "controlHowToInstall": "Como instalar",
+  "controlOpenAccessibility": "Abrir definições de acessibilidade",
+  "controlOpenAppInfo": "Abrir informações da app",
+  "controlPair": "Emparelhar com o Linksy",
+  "controlStatusInstall": "Instale primeiro a app Linksy Control. É uma app separada e a página dela explica como.",
+  "controlStatusAccessibility": "Ative o Linksy Control nas definições de acessibilidade do Android. Se o interruptor estiver cinzento, abra as informações da app, depois o menu ⋮ e escolha “Permitir configurações restritas”.",
+  "controlStatusPair": "Aprove o Linksy uma vez na app Linksy Control.",
+  "controlStatusReady": "Pronto. Quando o computador pedir para controlar este telemóvel, permita.",
+  "controlStatusActive": "O seu computador está a controlar este telemóvel. Pare na notificação.",
+  "controlRefusal": "Se o telemóvel não instalar a app ou não deixar ativá-la, é o Android a protegê-lo. O Linksy não lhe vai pedir para desativar o Play Protect nem para contornar nada. Escrever a partir do computador e ver o ecrã continuam a funcionar.",
+  "controlNotReady": "O controlo a partir do computador já não está pronto. Verifique nas permissões do Linksy.",
+  "controlStatusUnconfigured": "Indisponível nesta versão. O controlo a partir do computador precisa de uma versão feita para uma app Linksy Control específica e do Android 9 ou superior."
 }

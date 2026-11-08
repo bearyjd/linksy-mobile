@@ -19,9 +19,10 @@ import 'ui/l10n.dart';
 /// `--dart-define=LINKSY_DEMO=true` runs on made-up devices, for UI work.
 const _demo = bool.fromEnvironment('LINKSY_DEMO');
 
-/// What this phone does for computers (docs/protocol.md §4.10). Not `control`
-/// or `sms` (each needs a permission that gets sideloaded apps blocked at
-/// install), nor `media_state` or `clipboard_watch` (Android doesn't let apps
+/// What this phone does for computers (docs/protocol.md §4.10). Not `sms`
+/// (it needs a permission that gets sideloaded apps blocked at install), nor
+/// `control` (added while the companion app is set up and the user turned it
+/// on), nor `media_state` or `clipboard_watch` (Android doesn't let apps
 /// watch either in the background). `notifications` is added while they're
 /// mirrored: Notification access, the one such permission the user chose to
 /// give (Play Protect may stop the install over it).

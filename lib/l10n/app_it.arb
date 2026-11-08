@@ -896,5 +896,21 @@
   "keyboardStatusSwitch": "Il tuo computer vuole scrivere. Passa a Linksy Keyboard.",
   "keyboardStatusActive": "Il tuo computer sta scrivendo con Linksy Keyboard. Cambia tastiera per interrompere.",
   "sharingTypeRequestTitle": "{name} vuole scrivere su questo telefono",
-  "sharingTypeRequestDetail": "Scrive nel campo aperto, tramite Linksy Keyboard, finché non lo interrompi dalla notifica."
+  "sharingTypeRequestDetail": "Scrive nel campo aperto, tramite Linksy Keyboard, finché non lo interrompi dalla notifica.",
+  "controlCardTitle": "Controlla dal computer",
+  "controlCardWhy": "Permette a un computer autorizzato di toccare, scorrere e scrivere su questo telefono mentre mostra il tuo schermo. Serve l’app separata Linksy Control, che Android tratta come servizio di accessibilità. Chiede ogni volta e puoi fermarlo dalla notifica.",
+  "controlTurnOn": "Attiva",
+  "controlTurnOff": "Disattiva",
+  "controlHowToInstall": "Come installarla",
+  "controlOpenAccessibility": "Apri impostazioni di accessibilità",
+  "controlOpenAppInfo": "Apri info app",
+  "controlPair": "Associa a Linksy",
+  "controlStatusInstall": "Installa prima l’app Linksy Control. È un’app separata e la sua pagina spiega come.",
+  "controlStatusAccessibility": "Attiva Linksy Control nelle impostazioni di accessibilità di Android. Se l’interruttore è disattivato, apri le info dell’app, poi il menu ⋮ e scegli «Consenti impostazioni con limitazioni».",
+  "controlStatusPair": "Approva Linksy una volta nell’app Linksy Control.",
+  "controlStatusReady": "Pronto. Quando il computer chiede di controllare questo telefono, consentilo.",
+  "controlStatusActive": "Il tuo computer sta controllando questo telefono. Fermalo dalla notifica.",
+  "controlRefusal": "Se il telefono non installa l’app o non te la fa attivare, è Android che ti protegge. Linksy non ti chiederà di disattivare Play Protect né di aggirare nulla. Scrivere dal computer e vedere lo schermo continuano a funzionare.",
+  "controlNotReady": "Il controllo dal computer non è più pronto. Controllalo nelle autorizzazioni di Linksy.",
+  "controlStatusUnconfigured": "Non disponibile in questa versione. Il controllo dal computer richiede una versione creata per una specifica app Linksy Control e Android 9 o successivo."
 }

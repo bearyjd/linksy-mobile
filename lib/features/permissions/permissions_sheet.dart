@@ -4,6 +4,7 @@ import '../../app/platform.dart';
 import '../../ui/components.dart';
 import '../../ui/l10n.dart';
 import '../../ui/sig.dart';
+import 'control_card.dart';
 import 'keyboard_card.dart';
 
 /// What Linksy asks Android for, why, and a button that brings up Android's
@@ -92,6 +93,8 @@ class _PermissionsSheetState extends State<_PermissionsSheet>
             ),
             const SizedBox(height: 10),
             const KeyboardCard(),
+            const SizedBox(height: 10),
+            const ControlCard(),
             const SizedBox(height: 20),
             SigButton(
               label: context.l10n.permissionsDone,

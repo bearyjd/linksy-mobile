@@ -3238,4 +3238,57 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get sharingTypeRequestDetail =>
       'Linksy Keyboardを通じて開いている入力欄に入力します。通知から停止できます。';
+
+  @override
+  String get controlCardTitle => 'パソコンから操作';
+
+  @override
+  String get controlCardWhy =>
+      '許可したパソコンが、画面を表示している間、このスマートフォンをタップ、スワイプ、入力できるようにします。別のアプリ Linksy Control が必要で、Android はこれをユーザー補助サービスとして扱います。毎回確認し、通知からいつでも停止できます。';
+
+  @override
+  String get controlTurnOn => 'オンにする';
+
+  @override
+  String get controlTurnOff => 'オフにする';
+
+  @override
+  String get controlHowToInstall => 'インストール方法';
+
+  @override
+  String get controlOpenAccessibility => 'ユーザー補助の設定を開く';
+
+  @override
+  String get controlOpenAppInfo => 'アプリ情報を開く';
+
+  @override
+  String get controlPair => 'Linksy とペアリング';
+
+  @override
+  String get controlStatusInstall =>
+      'まず Linksy Control アプリをインストールしてください。別のアプリで、ページに手順があります。';
+
+  @override
+  String get controlStatusAccessibility =>
+      'Android のユーザー補助設定で Linksy Control をオンにしてください。スイッチがグレーの場合は、アプリ情報を開き、⋮ メニューから「制限付き設定を許可」を選びます。';
+
+  @override
+  String get controlStatusPair => 'Linksy Control アプリで Linksy を一度承認してください。';
+
+  @override
+  String get controlStatusReady => '準備完了です。パソコンがこのスマートフォンの操作を求めたら許可してください。';
+
+  @override
+  String get controlStatusActive => 'パソコンがこのスマートフォンを操作しています。通知から停止できます。';
+
+  @override
+  String get controlRefusal =>
+      'アプリをインストールできない、またはオンにできない場合は、Android があなたを守っています。Linksy が Play Protect をオフにしたり回避したりするよう求めることはありません。パソコンからの入力と画面の表示は引き続き使えます。';
+
+  @override
+  String get controlNotReady => 'パソコンからの操作は準備ができていません。Linksy の権限で確認してください。';
+
+  @override
+  String get controlStatusUnconfigured =>
+      'このビルドでは利用できません。パソコンからの操作には、特定の Linksy Control アプリ用に作られたビルドと、Android 9 以降が必要です。';
 }

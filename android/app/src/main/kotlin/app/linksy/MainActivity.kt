@@ -16,6 +16,7 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import app.linksy.control.ControlCompanion
 import app.linksy.files.FileServer
 import app.linksy.files.GalleryServer
 import app.linksy.files.NativeFiles
@@ -52,6 +53,7 @@ class MainActivity : FlutterActivity() {
 
     /// Waiting on the system's screen capture prompt: the session and Dart's reply.
     private var pendingCapture: Pair<String, MethodChannel.Result>? = null
+    private var pendingPair: MethodChannel.Result? = null
     /// Dart's replies waiting on Android's permission dialogs, by request code.
     private val pendingPermissions = mutableMapOf<Int, MethodChannel.Result>()
 
@@ -78,6 +80,7 @@ class MainActivity : FlutterActivity() {
         PhoneNotifications.removed = { key, kept ->
             runOnUiThread { channel?.invokeMethod("phoneNotificationGone", mapOf("key" to key, "kept" to kept)) }
         }
+        ShareService.controlListener = { runOnUiThread { channel?.invokeMethod("controlChanged", null) } }
         ShareService.webcamListener = { session, state ->
             runOnUiThread { channel?.invokeMethod("webcamChanged", mapOf("session" to session, "state" to state.toString())) }
         }
@@ -615,6 +618,38 @@ class MainActivity : FlutterActivity() {
                         result.success(null)
                     }
                     "keyboardState" -> result.success(Typing.state(this@MainActivity))
+                    // Control from the computer, through the Linksy Control companion app.
+                    "controlState" -> result.success(ControlCompanion.state(this@MainActivity))
+                    "openAccessibilitySettings" -> {
+                        startActivity(ControlCompanion.accessibilitySettings())
+                        result.success(null)
+                    }
+                    "openCompanionInfo" -> {
+                        try {
+                            startActivity(ControlCompanion.appInfo())
+                        } catch (_: android.content.ActivityNotFoundException) {
+                        }
+                        result.success(null)
+                    }
+                    "pairCompanion" -> {
+                        // Only the companion this build trusts is offered a pairing.
+                        if (!ControlCompanion.trusted(this@MainActivity)) {
+                            result.success(false)
+                            return@setMethodCallHandler
+                        }
+                        pendingPair?.success(false)
+                        pendingPair = result
+                        try {
+                            @Suppress("DEPRECATION")
+                            startActivityForResult(ControlCompanion.pairIntent(), REQUEST_PAIR)
+                        } catch (_: android.content.ActivityNotFoundException) {
+                            pendingPair = null
+                            result.success(false)
+                        } catch (_: SecurityException) {
+                            pendingPair = null
+                            result.success(false)
+                        }
+                    }
                     "openKeyboardSettings" -> {
                         startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS))
                         result.success(null)
@@ -1101,6 +1136,7 @@ class MainActivity : FlutterActivity() {
         PhoneNotifications.removed = null
         DirectHost.step = null
         ShareService.webcamListener = null
+        ShareService.controlListener = null
         previews.keys.toList().forEach { webcamPreview(it, false) }
         batteryReceiver?.let { runCatching { unregisterReceiver(it) } }
         batteryReceiver = null
@@ -1308,6 +1344,16 @@ class MainActivity : FlutterActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         @Suppress("DEPRECATION")
         super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_PAIR) {
+            // Only an approval counts, and only from the trusted companion as it
+            // is now. A cancelled screen proves nothing about an earlier approval:
+            // that is undone only by the companion saying "not approved" (BEGIN reply 4).
+            val paired = resultCode == RESULT_OK && ControlCompanion.trusted(this)
+            if (paired) ControlCompanion.setPaired(this, true)
+            pendingPair?.success(paired)
+            pendingPair = null
+            return
+        }
         if (requestCode == REQUEST_NOTIFICATION_ACCESS) {
             pendingNotificationAccess?.success(PhoneNotifications.allowed(this))
             pendingNotificationAccess = null
@@ -1406,6 +1452,7 @@ class MainActivity : FlutterActivity() {
         const val REQUEST_PICTURE = 46
         const val REQUEST_NOTIFICATION_ACCESS = 52
         const val REQUEST_PHOTOS = 53
+        const val REQUEST_PAIR = 55
 
         private var files: FileServer? = null
 

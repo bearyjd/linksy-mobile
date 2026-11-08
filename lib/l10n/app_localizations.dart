@@ -5495,6 +5495,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'It types into the box you have open, through Linksy Keyboard, until you stop it from the notification.'**
   String get sharingTypeRequestDetail;
+
+  /// Control from your computer: the Linksy Control companion app.
+  ///
+  /// In en, this message translates to:
+  /// **'Control from your computer'**
+  String get controlCardTitle;
+
+  /// Control from your computer: the Linksy Control companion app.
+  ///
+  /// In en, this message translates to:
+  /// **'Lets a computer you allow tap, swipe and type on this phone while it shows your screen. It needs the separate Linksy Control app, which Android treats as an Accessibility service. It asks you every time, and you can stop it from the notification.'**
+  String get controlCardWhy;
+
+  /// Control from your computer: the Linksy Control companion app.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on'**
+  String get controlTurnOn;
+
+  /// Control from your computer: the Linksy Control companion app.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off'**
+  String get controlTurnOff;
+
+  /// Control from your computer: the Linksy Control companion app.
+  ///
+  /// In en, this message translates to:
+  /// **'How to install it'**
+  String get controlHowToInstall;
+
+  /// Control from your computer: the Linksy Control companion app.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Accessibility settings'**
+  String get controlOpenAccessibility;
+
+  /// Control from your computer: the Linksy Control companion app.
+  ///
+  /// In en, this message translates to:
+  /// **'Open app info'**
+  String get controlOpenAppInfo;
+
+  /// Control from your computer: the Linksy Control companion app.
+  ///
+  /// In en, this message translates to:
+  /// **'Pair with Linksy'**
+  String get controlPair;
+
+  /// Control from your computer: the Linksy Control companion app.
+  ///
+  /// In en, this message translates to:
+  /// **'Install the Linksy Control app first. It is a separate app, and its page explains how.'**
+  String get controlStatusInstall;
+
+  /// Control from your computer: the Linksy Control companion app.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on Linksy Control in Android’s Accessibility settings. If the switch is greyed out, open the app’s info, then the ⋮ menu, and choose Allow restricted settings.'**
+  String get controlStatusAccessibility;
+
+  /// Control from your computer: the Linksy Control companion app.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve Linksy once in the Linksy Control app.'**
+  String get controlStatusPair;
+
+  /// Control from your computer: the Linksy Control companion app.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready. When your computer asks to control this phone, allow it.'**
+  String get controlStatusReady;
+
+  /// Control from your computer: the Linksy Control companion app.
+  ///
+  /// In en, this message translates to:
+  /// **'Your computer is controlling this phone. Stop it from the notification.'**
+  String get controlStatusActive;
+
+  /// Control from your computer: the Linksy Control companion app.
+  ///
+  /// In en, this message translates to:
+  /// **'If your phone won’t install the app or won’t let you turn it on, that is Android protecting you. Linksy won’t ask you to turn off Play Protect or work around it. Typing from your computer and viewing your screen still work.'**
+  String get controlRefusal;
+
+  /// Control from your computer: the Linksy Control companion app.
+  ///
+  /// In en, this message translates to:
+  /// **'Control from your computer isn’t ready any more. Open Linksy’s permissions to check it.'**
+  String get controlNotReady;
+
+  /// Control from your computer: the Linksy Control companion app.
+  ///
+  /// In en, this message translates to:
+  /// **'Not available in this build. Control from your computer needs a build made for one specific Linksy Control app, and Android 9 or newer.'**
+  String get controlStatusUnconfigured;
 }
 
 class _AppLocalizationsDelegate

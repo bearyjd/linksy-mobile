@@ -3336,4 +3336,61 @@ class AppLocalizationsMg extends AppLocalizations {
   @override
   String get sharingTypeRequestDetail =>
       'Manoratra ao amin\'ny boaty misokatra izy amin\'ny alalan\'i Linksy Keyboard mandra-pampitsahatrinao azy amin\'ny fampandrenesana.';
+
+  @override
+  String get controlCardTitle => 'Fanaraha-maso avy amin’ny solosaina';
+
+  @override
+  String get controlCardWhy =>
+      'Avela hanindry, hamoaka ary hanoratra amin’ity findainganao ity ny solosaina nekena raha miseho eo ny efijery. Mila ny rindrambaiko hafa Linksy Control izany, izay raisin’i Android ho serivisy fidirana mora (Accessibility). Manontany isaky ny mampiasa izany, ary azonao atsaharina avy amin’ny fampandrenesana.';
+
+  @override
+  String get controlTurnOn => 'Alefaso';
+
+  @override
+  String get controlTurnOff => 'Vonoy';
+
+  @override
+  String get controlHowToInstall => 'Ahoana ny fametrahana azy';
+
+  @override
+  String get controlOpenAccessibility => 'Sokafy ny fanamboarana Accessibility';
+
+  @override
+  String get controlOpenAppInfo => 'Sokafy ny momba ny rindrambaiko';
+
+  @override
+  String get controlPair => 'Ampifandraiso amin’i Linksy';
+
+  @override
+  String get controlStatusInstall =>
+      'Apetraho aloha ny rindrambaiko Linksy Control. Rindrambaiko hafa izy, ary ny pejiny milaza ny fomba.';
+
+  @override
+  String get controlStatusAccessibility =>
+      'Alefaso ny Linksy Control ao amin’ny fanamboarana Accessibility an’i Android. Raha mody volondavenona ny switch, sokafy ny momba ny rindrambaiko, avy eo ny menio ⋮, ary Fidio ny “Allow restricted settings”.';
+
+  @override
+  String get controlStatusPair =>
+      'Ekeo indray mandeha i Linksy ao amin’ny rindrambaiko Linksy Control.';
+
+  @override
+  String get controlStatusReady =>
+      'Vonona. Rehefa mangataka hifehy ity findainga ity ny solosainao dia avelao.';
+
+  @override
+  String get controlStatusActive =>
+      'Ny solosainao no mifehy ity findainga ity. Atsaharo avy amin’ny fampandrenesana.';
+
+  @override
+  String get controlRefusal =>
+      'Raha tsy mametraka ny rindrambaiko ny findainganao na tsy avela hamoronao izany, i Android no miaro anao. Tsy hangatahin’i Linksy hanala ny Play Protect na hanodina izany. Mbola mandeha ny fanoratana avy amin’ny solosaina sy ny fijerena ny efijery.';
+
+  @override
+  String get controlNotReady =>
+      'Tsy vonona intsony ny fanaraha-maso avy amin’ny solosaina. Jereo ao amin’ny alalana an’i Linksy.';
+
+  @override
+  String get controlStatusUnconfigured =>
+      'Tsy azo ampiasaina amin’ity dikan-tsary ity. Ny fanaraha-maso avy amin’ny solosaina dia mitaky dikan-tsary natao ho an’ny rindranasa Linksy Control iray manokana, sy Android 9 na vao haingana kokoa.';
 }
