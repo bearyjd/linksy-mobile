@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:linksy/app/activity.dart';
 import 'package:linksy/app/linksy_controller.dart';
 import 'package:linksy/app/scope.dart';
+import 'package:linksy/core/companion_state.dart';
 import 'package:linksy/core/demo_node.dart';
 import 'package:linksy/core/models.dart';
 import 'package:linksy/features/permissions/control_card.dart';
@@ -17,6 +18,8 @@ class _Node extends DemoNode {
 
   final told = <List<String>>[];
   final ended = <String>[];
+  final declined = <String>[];
+  Object? endError;
   final events$ = StreamController<LinksyEvent>.broadcast();
 
   @override
@@ -26,7 +29,14 @@ class _Node extends DemoNode {
   Future<void> setFeatures(List<String> features) async => told.add(features);
 
   @override
-  Future<void> endSession(String session) async => ended.add(session);
+  Future<void> endSession(String session) async {
+    if (endError case final e?) throw e;
+    ended.add(session);
+  }
+
+  @override
+  Future<void> declineUnsupported(String request) async =>
+      declined.add(request);
 }
 
 const _studio = DeviceInfo(
@@ -42,7 +52,13 @@ void main() {
 
   Future<(LinksyController, _Node)> start(WidgetTester tester) async {
     calls.clear();
-    state = {'installed': false, 'accessibility': false, 'paired': false};
+    state = {
+      'configured': true,
+      'installed': false,
+      'accessibility': false,
+      'paired': false,
+      'bridged': false,
+    };
     tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
       const MethodChannel('app.linksy/platform'),
       (call) async {
@@ -94,8 +110,13 @@ void main() {
   }
 
   test('the card walks through the steps in order', () {
-    CompanionState s(bool i, bool a, bool p) =>
-        (installed: i, accessibility: a, paired: p);
+    CompanionState s(bool i, bool a, bool p, {bool configured = true}) => (
+      configured: configured,
+      installed: i,
+      accessibility: a,
+      paired: p,
+      bridged: false,
+    );
     expect(
       controlStep(on: false, state: s(true, true, true), active: false),
       ControlStep.off,
@@ -130,6 +151,31 @@ void main() {
       controlStep(on: false, state: s(true, true, true), active: true),
       ControlStep.off,
     );
+    // A build that pins no companion: nothing else to do but say so.
+    expect(
+      controlStep(
+        on: true,
+        state: s(false, false, false, configured: false),
+        active: false,
+      ),
+      ControlStep.unconfigured,
+    );
+    expect(
+      controlStep(
+        on: true,
+        state: s(true, true, true, configured: false),
+        active: true,
+      ),
+      ControlStep.unconfigured,
+    );
+    expect(
+      controlStep(
+        on: false,
+        state: s(true, true, true, configured: false),
+        active: false,
+      ),
+      ControlStep.off,
+    );
   });
 
   testWidgets('control is announced only when on, installed, accessibility '
@@ -139,7 +185,13 @@ void main() {
     expect(node.told.expand((f) => f), isNot(contains('control')));
 
     // Everything in place, but the user has not turned it on.
-    state = {'installed': true, 'accessibility': true, 'paired': true};
+    state = {
+      'configured': true,
+      'installed': true,
+      'accessibility': true,
+      'paired': true,
+      'bridged': false,
+    };
     await c.refreshControl();
     expect(node.told.last, isNot(contains('control')));
 
@@ -175,7 +227,13 @@ void main() {
     tester,
   ) async {
     final (c, node) = await start(tester);
-    state = {'installed': true, 'accessibility': true, 'paired': true};
+    state = {
+      'configured': true,
+      'installed': true,
+      'accessibility': true,
+      'paired': true,
+      'bridged': false,
+    };
     await c.setControl(true);
     final before = node.told.length;
     await c.refreshControl();
@@ -186,7 +244,13 @@ void main() {
   testWidgets('an accepted control session starts the screen share, which '
       'binds the companion on the Android side', (tester) async {
     final (c, node) = await start(tester);
-    state = {'installed': true, 'accessibility': true, 'paired': true};
+    state = {
+      'configured': true,
+      'installed': true,
+      'accessibility': true,
+      'paired': true,
+      'bridged': false,
+    };
     await c.setControl(true);
     calls.clear();
     node.events$.add(
@@ -207,7 +271,13 @@ void main() {
   testWidgets('a control session that arrives after the switch went off or '
       'the companion went away is ended, never started', (tester) async {
     final (c, node) = await start(tester);
-    state = {'installed': true, 'accessibility': true, 'paired': true};
+    state = {
+      'configured': true,
+      'installed': true,
+      'accessibility': true,
+      'paired': true,
+      'bridged': false,
+    };
     await c.setControl(true);
     await c.setControl(false);
     calls.clear();
@@ -228,7 +298,13 @@ void main() {
   testWidgets('turning it off ends a running control session at once, and '
       'leaves a plain screen share alone', (tester) async {
     final (c, node) = await start(tester);
-    state = {'installed': true, 'accessibility': true, 'paired': true};
+    state = {
+      'configured': true,
+      'installed': true,
+      'accessibility': true,
+      'paired': true,
+      'bridged': false,
+    };
     await c.setControl(true);
     for (final (id, kind) in [
       ('ctl-1', SessionKind.control),
@@ -310,6 +386,150 @@ void main() {
     await tester.tap(find.text('Turn off'));
     await tester.pumpAndSettle();
     expect(c.controlOn, isFalse);
+    await finish(tester, c);
+  });
+
+  testWidgets('a build with no pinned companion never announces control', (
+    tester,
+  ) async {
+    final (c, node) = await start(tester);
+    state = {
+      'configured': false,
+      'installed': true,
+      'accessibility': true,
+      'paired': true,
+      'bridged': false,
+    };
+    await c.setControl(true);
+    expect(c.companionReady, isFalse);
+    expect(node.told.last, isNot(contains('control')));
+    await finish(tester, c);
+  });
+
+  testWidgets('the card says so when this build has no companion to trust', (
+    tester,
+  ) async {
+    final (c, _) = await start(tester);
+    state['configured'] = false;
+    await c.setControl(true);
+    await showCard(tester, c);
+    expect(find.textContaining('Not available in this build'), findsOneWidget);
+    expect(find.text('How to install it'), findsNothing);
+    await finish(tester, c);
+  });
+
+  testWidgets('the bridge giving up un-announces control and refreshes the '
+      'card without a resume', (tester) async {
+    final (c, node) = await start(tester);
+    state = {
+      'configured': true,
+      'installed': true,
+      'accessibility': true,
+      'paired': true,
+      'bridged': false,
+    };
+    await c.setControl(true);
+    expect(node.told.last, contains('control'));
+    // The companion said "not approved" during a session.
+    state['paired'] = false;
+    await tester.binding.defaultBinaryMessenger.handlePlatformMessage(
+      'app.linksy/platform',
+      const StandardMethodCodec().encodeMethodCall(
+        const MethodCall('controlChanged'),
+      ),
+      (_) {},
+    );
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
+    expect(c.companion.paired, isFalse);
+    expect(node.told.last, isNot(contains('control')));
+    await finish(tester, c);
+  });
+
+  testWidgets('turning it off still refreshes and announces when ending a '
+      'session fails', (tester) async {
+    final (c, node) = await start(tester);
+    state = {
+      'configured': true,
+      'installed': true,
+      'accessibility': true,
+      'paired': true,
+      'bridged': false,
+    };
+    await c.setControl(true);
+    node.events$.add(
+      const SessionStarted(
+        session: 'ctl-1',
+        peer: _studio,
+        kind: SessionKind.control,
+        sharing: true,
+      ),
+    );
+    await tester.pump();
+    node.endError = StateError('link down');
+    await expectLater(c.setControl(false), throwsStateError);
+    expect(c.controlOn, isFalse);
+    expect(node.told.last, isNot(contains('control')));
+    await finish(tester, c);
+  });
+
+  testWidgets('the card only says the computer is controlling while the '
+      'bridge is active', (tester) async {
+    final (c, node) = await start(tester);
+    state = {
+      'configured': true,
+      'installed': true,
+      'accessibility': true,
+      'paired': true,
+      'bridged': false,
+    };
+    await c.setControl(true);
+    node.events$.add(
+      const SessionStarted(
+        session: 'ctl-1',
+        peer: _studio,
+        kind: SessionKind.control,
+        sharing: true,
+      ),
+    );
+    await tester.pump();
+    await showCard(tester, c);
+    expect(c.controlling, isTrue);
+    expect(find.textContaining('is controlling this phone'), findsNothing);
+    expect(find.textContaining('Ready'), findsOneWidget);
+    state['bridged'] = true;
+    await c.refreshControl();
+    await tester.pumpAndSettle();
+    expect(find.textContaining('is controlling this phone'), findsOneWidget);
+    await finish(tester, c);
+  });
+
+  testWidgets('accepting a control request after the companion went away '
+      'declines it and never asks for the screen', (tester) async {
+    final (c, node) = await start(tester);
+    state = {
+      'configured': true,
+      'installed': true,
+      'accessibility': true,
+      'paired': true,
+      'bridged': false,
+    };
+    await c.setControl(true);
+    // Uninstalled between the announcement and the tap on Allow.
+    state['installed'] = false;
+    calls.clear();
+    final error = await c.respondSession(
+      const SessionRequest(
+        request: 'req-1',
+        from: _studio,
+        kind: SessionKind.control,
+      ),
+      accept: true,
+    );
+    expect(error, isNotNull);
+    expect(node.declined, ['req-1']);
+    expect(calls.where((m) => m.method == 'requestScreenCapture'), isEmpty);
     await finish(tester, c);
   });
 }

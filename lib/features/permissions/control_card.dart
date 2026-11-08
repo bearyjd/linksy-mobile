@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app/linksy_controller.dart';
 import '../../app/platform.dart';
 import '../../app/scope.dart';
+import '../../core/companion_state.dart';
 import '../../ui/components.dart';
 import '../../ui/l10n.dart';
 import '../../ui/sig.dart';
@@ -13,9 +14,7 @@ const controlCompanionUrl = 'https://github.com/bearyjd/linksy-control';
 /// Where the user is in setting up Control from your computer: the separate
 /// companion app, its Accessibility switch (Android makes the user turn it on
 /// themselves), one pairing.
-enum ControlStep { off, install, accessibility, pair, ready, active }
-
-typedef CompanionState = ({bool installed, bool accessibility, bool paired});
+enum ControlStep { off, unconfigured, install, accessibility, pair, ready, active }
 
 ControlStep controlStep({
   required bool on,
@@ -61,6 +60,7 @@ class _ControlCardState extends State<ControlCard> {
     );
     final status = switch (step) {
       ControlStep.off => null,
+      ControlStep.unconfigured => 'Not available in this build.',
       ControlStep.install => l.controlStatusInstall,
       ControlStep.accessibility => l.controlStatusAccessibility,
       ControlStep.pair => l.controlStatusPair,

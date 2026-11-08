@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
+import '../core/companion_state.dart';
 import '../core/models.dart';
 
 /// Something another app shared to Linksy: text (maybe a link) or files.
@@ -907,13 +908,14 @@ abstract final class LinksyPlatform {
 
   /// The Linksy Control companion app on this phone: whether it is installed,
   /// turned on in Accessibility settings, and paired with Linksy.
-  static Future<({bool installed, bool accessibility, bool paired})>
-  controlState() async {
+  static Future<CompanionState> controlState() async {
     final m = await _call<Map<Object?, Object?>>('controlState');
     return (
+      configured: m?['configured'] == true,
       installed: m?['installed'] == true,
       accessibility: m?['accessibility'] == true,
       paired: m?['paired'] == true,
+      bridged: m?['bridged'] == true,
     );
   }
 

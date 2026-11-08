@@ -11,11 +11,11 @@ import 'package:flutter/services.dart';
 
 import '../core/deck.dart';
 import '../core/deck_layouts.dart';
+import '../core/companion_state.dart';
 import '../core/linksy_node.dart';
 import 'app_log.dart';
 import '../core/models.dart';
 import '../core/service_info.dart';
-import '../features/permissions/control_card.dart' show CompanionState;
 import '../features/phones/selection.dart';
 import 'app_update.dart';
 import '../ui/format.dart';
@@ -409,9 +409,11 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
 
   /// What Android says about the Linksy Control companion now.
   CompanionState companion = (
+    configured: false,
     installed: false,
     accessibility: false,
     paired: false,
+    bridged: false,
   );
 
   bool get companionReady =>
