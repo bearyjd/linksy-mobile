@@ -225,6 +225,29 @@ void main() {
     await finish(tester, c);
   });
 
+  testWidgets('turning it off ends a running control session at once, and '
+      'leaves a plain screen share alone', (tester) async {
+    final (c, node) = await start(tester);
+    state = {'installed': true, 'accessibility': true, 'paired': true};
+    await c.setControl(true);
+    for (final (id, kind) in [
+      ('ctl-1', SessionKind.control),
+      ('scr-1', SessionKind.screen),
+    ]) {
+      node.events$.add(
+        SessionStarted(session: id, peer: _studio, kind: kind, sharing: true),
+      );
+    }
+    await tester.pump();
+    calls.clear();
+    await c.setControl(false);
+    final stops = calls.where((m) => m.method == 'stopShare').toList();
+    expect(stops.map((m) => m.arguments['session']), ['ctl-1']);
+    expect(node.ended, ['ctl-1']);
+    expect(node.told.last, isNot(contains('control')));
+    await finish(tester, c);
+  });
+
   testWidgets('a plain screen share is not affected', (tester) async {
     final (c, node) = await start(tester);
     calls.clear();

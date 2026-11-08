@@ -423,6 +423,15 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<void> setControl(bool on) async {
     await _setPref('control', on ? 'on' : null);
+    // Off ends every control session now: Stop, the bridge's END and unbind.
+    if (!on) {
+      for (final id in [
+        for (final e in sharing.entries)
+          if (e.value.kind == SessionKind.control) e.key,
+      ]) {
+        await stopSharing(id);
+      }
+    }
     companion = await LinksyPlatform.controlState();
     notifyListeners();
     await _announce();
