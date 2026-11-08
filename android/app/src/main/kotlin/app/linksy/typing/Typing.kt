@@ -48,10 +48,6 @@ object Typing {
     /// Events handed to the main thread and not yet applied, per session.
     private const val IN_FLIGHT = 32
 
-    /// How long a session may take to show up on the Rust side.
-    private const val REGISTER_TRIES = 20
-    private const val REGISTER_WAIT_MS = 100L
-
     /// Who is typing now, for the keyboard's own view.
     fun who(): String? = synchronized(peers) { peers.values.lastOrNull() }
 
@@ -79,32 +75,27 @@ object Typing {
     /// side when it stops (unless a newer session has taken the id).
     private fun read(app: Context, session: String, generation: Int) {
         val room = Backpressure(IN_FLIGHT)
-        var gotSome = false
-        var tries = 0
-        while (gate.canRead(session, generation)) {
-            val bytes = NativeSession.read(session)
-            if (bytes == null) {
-                if (!gotSome && tries++ < REGISTER_TRIES) {
-                    Thread.sleep(REGISTER_WAIT_MS)
-                    continue
-                }
-                break
-            }
-            gotSome = true
-            val event = TypingEvent.decode(bytes) ?: continue
-            if (!room.acquire { gate.canRead(session, generation) }) break
-            // Posted for the field open now: not typed into another one.
-            val field = gate.fieldGeneration()
-            main.post {
-                try {
-                    if (gate.canType(session, generation, field)) deliver(session, event)
-                } finally {
-                    room.release()
-                }
-            }
+        try {
+            TypingReader(
+                canRead = { gate.canRead(session, generation) },
+                read = { NativeSession.read(session) },
+                fieldGeneration = gate::fieldGeneration,
+                acquire = { wanted -> room.acquire(wanted) },
+                post = { event, field ->
+                    main.post {
+                        try {
+                            if (gate.canType(session, generation, field)) deliver(session, event)
+                        } finally {
+                            room.release()
+                        }
+                    }
+                },
+                finish = { if (!gate.replaced(session, generation)) NativeSession.finish(session) },
+                pause = Thread::sleep,
+            ).run()
+        } finally {
+            main.post { ended(app, session, generation) }
         }
-        if (!gate.replaced(session, generation)) NativeSession.finish(session)
-        main.post { ended(app, session, generation) }
     }
 
     private fun deliver(session: String, event: TypingEvent) {

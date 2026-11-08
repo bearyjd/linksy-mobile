@@ -139,16 +139,23 @@ fn add_incoming(id: &str, peer: linksy_core::Fingerprint) -> (mpsc::Sender<Vec<u
 
 /// An accepted `input` session on this phone: a computer typing (§4.26). Held
 /// until the typing ends, the user stops it or the keyboard is turned off.
-fn run_typing(mut typing: linksy_core::keyboard::KeyboardInput) {
+fn run_typing(typing: linksy_core::keyboard::KeyboardInput) {
     let id = typing.id.to_string();
     let (tx, closed) = add_incoming(&id, typing.peer.id);
-    rt().spawn(async move {
-        crate::keyboard::forward(&mut typing, tx, closed).await;
-        // The entry stays until the app has read what is still queued ([`read`]
-        // forgets it then); only [`end`] discards queued input.
-        // Dropping it ends the session; core then reports `SessionEnded`.
-        drop(typing);
-    });
+    rt().spawn(pump_typing(typing, tx, closed));
+}
+
+/// Moves what the source types into the session's queue until it ends. The
+/// entry stays until the app has read what is still queued ([`read`] forgets
+/// it then); only [`end`] discards queued input. Dropping the source ends the
+/// session; core then reports `SessionEnded`.
+async fn pump_typing(
+    mut source: impl crate::keyboard::Source + Send + 'static,
+    tx: mpsc::Sender<Vec<u8>>,
+    closed: Arc<Notify>,
+) {
+    crate::keyboard::forward(&mut source, tx, closed).await;
+    drop(source);
 }
 
 fn handle(id: &str) -> Option<Arc<Handle>> {

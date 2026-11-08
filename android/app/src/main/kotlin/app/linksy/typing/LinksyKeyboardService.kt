@@ -3,6 +3,7 @@ package app.linksy.typing
 import android.inputmethodservice.InputMethodService
 import android.os.Build
 import android.os.SystemClock
+import android.view.KeyCharacterMap
 import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -25,6 +26,7 @@ class LinksyKeyboardService : InputMethodService() {
     private var typist: Typist? = null
     private var info: EditorInfo? = null
     private var status: TextView? = null
+    private val fieldRestart = FieldRestart()
     private val pressTimes = PressTimes { SystemClock.uptimeMillis() }
 
     override fun onCreate() {
@@ -65,14 +67,18 @@ class LinksyKeyboardService : InputMethodService() {
 
     override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
         super.onStartInput(attribute, restarting)
-        // A restart in the same field skips onFinishInput: let go of what the
-        // old Typist holds before it is replaced.
-        releaseAll()
+        val state = if (attribute == null) FieldState.None else FieldPolicy.of(attribute.inputType, currentInputConnection != null)
+        val key = attribute?.let { FieldKey(it.fieldId, it.packageName, it.inputType, it.imeOptions) }
         info = attribute
+        // The same field started again (a chat app after Send): what is in
+        // flight and the keys held stay, nothing is replaced.
+        if (key != null && fieldRestart.keeps(key, state, restarting)) return
+        if (key == null) fieldRestart.reset()
+        // A new field skips onFinishInput on a restart: let go of what the old
+        // Typist holds before it is replaced.
+        releaseAll()
         typist = Typist(ConnectionEditor())
-        Typing.field(
-            if (attribute == null) FieldState.None else FieldPolicy.of(attribute.inputType, currentInputConnection != null),
-        )
+        Typing.field(state)
     }
 
     // Shown with nobody typing (picked by hand, or the lock screen's bouncer):
@@ -84,6 +90,7 @@ class LinksyKeyboardService : InputMethodService() {
 
     override fun onFinishInput() {
         releaseAll()
+        fieldRestart.reset()
         typist = null
         info = null
         Typing.field(FieldState.None)
@@ -134,7 +141,10 @@ class LinksyKeyboardService : InputMethodService() {
 
         override fun key(code: Int, down: Boolean, meta: Int): Boolean {
             val action = if (down) KeyEvent.ACTION_DOWN else KeyEvent.ACTION_UP
-            val event = KeyEvent(pressTimes.downTime(code, down), SystemClock.uptimeMillis(), action, code, 0, meta)
+            val event = KeyEvent(
+                pressTimes.downTime(code, down), SystemClock.uptimeMillis(), action, code, 0, meta,
+                KeyCharacterMap.VIRTUAL_KEYBOARD, 0, KeyEvent.FLAG_SOFT_KEYBOARD or KeyEvent.FLAG_KEEP_TOUCH_MODE,
+            )
             return connection?.sendKeyEvent(event) ?: false
         }
     }
