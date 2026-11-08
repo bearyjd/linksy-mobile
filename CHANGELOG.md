@@ -6,11 +6,13 @@ All notable changes to Linksy for Android. Format: [Keep a Changelog](https://ke
 
 ### Added
 
-- **Type from your computer.** Permissions › Type from your computer lets a paired computer type into the field open on this phone, through Linksy Keyboard (an input method with no keys of its own). Off by default; turn it on in Android's keyboard settings and pick it when a computer asks. The phone asks every time, shows a notification with Stop while it goes on, and ends it when the screen turns off or you pick another keyboard. Linksy Keyboard never becomes your default and never reads what you type.
+- **Type from your computer.** Permissions › Type from your computer lets a paired computer type into the field open on this phone, through Linksy Keyboard (an input method with no keys of its own). Off by default; turn it on in Android's keyboard settings and pick it when a computer asks. The phone asks every time, shows a notification with Stop while it goes on, and ends it when the screen turns off or you pick another keyboard. Linksy Keyboard never reads what you type, and it switches back to your previous keyboard as soon as the last computer stops (if it is your only keyboard, it says so).
+- While it types: Stop, turning the card off, the screen turning off, or picking another keyboard stop it at once, and nothing already on its way is typed. Password fields pause it; fields that cannot take typing say so. Ctrl/Alt shortcuts from the computer are not passed on, so typing never touches the phone's clipboard.
 - Strings for this are machine-translated in all languages but English (nine, Malagasy included) and need a native read.
 
 ### Changed
 
+- Removed the unused touchpad-request strings (`sharingInputRequestTitle`, `sharingInputRequestDetail`) from every language.
 - Building the Rust bridge needs a core with typing on the phone (temporarily the `bearyjd/linksy-desktop` fork, commit 0c92f2f).
 
 ## [0.3.5] - 2026-11-06
