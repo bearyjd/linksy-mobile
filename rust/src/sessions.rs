@@ -112,6 +112,12 @@ pub(crate) fn run(mut session: Session) {
     });
 }
 
+/// Registers a session the phone only reads (typing): no way to write to it.
+/// The returned sender feeds [`read`]; the notify is woken by [`end`].
+fn add_incoming(_id: &str, _peer: linksy_core::Fingerprint) -> (mpsc::Sender<Vec<u8>>, Arc<Notify>) {
+    todo!()
+}
+
 fn handle(id: &str) -> Option<Arc<Handle>> {
     sessions().lock().unwrap().get(id).cloned()
 }
@@ -220,5 +226,46 @@ mod jni_api {
         if let Some(session) = id(&mut env, &session) {
             super::end(&session);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn peer() -> linksy_core::Fingerprint {
+        linksy_core::Fingerprint::of(b"a computer")
+    }
+
+    #[test]
+    fn a_typing_session_is_read_in_order_and_cannot_be_written_to() {
+        let (tx, _closed) = add_incoming("typing-1", peer());
+        tx.blocking_send(b"Tone".to_vec()).unwrap();
+        tx.blocking_send(b"Ttwo".to_vec()).unwrap();
+        assert_eq!(read("typing-1").as_deref(), Some(&b"Tone"[..]));
+        assert_eq!(read("typing-1").as_deref(), Some(&b"Ttwo"[..]));
+        assert!(!write("typing-1", vec![1]));
+        end("typing-1");
+    }
+
+    #[test]
+    fn ending_wakes_the_session_and_forgets_it() {
+        let (tx, closed) = add_incoming("typing-2", peer());
+        end("typing-2");
+        // The permit is kept for the task that waits on it later.
+        let rt = tokio::runtime::Builder::new_current_thread().enable_time().build().unwrap();
+        rt.block_on(async {
+            tokio::time::timeout(std::time::Duration::from_secs(2), closed.notified()).await.expect("woken by end");
+        });
+        assert_eq!(read("typing-2"), None);
+        drop(tx);
+    }
+
+    #[test]
+    fn the_reader_sees_the_end_when_the_source_is_dropped() {
+        let (tx, _closed) = add_incoming("typing-3", peer());
+        drop(tx);
+        assert_eq!(read("typing-3"), None);
+        end("typing-3");
     }
 }
