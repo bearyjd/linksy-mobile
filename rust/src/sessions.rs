@@ -337,4 +337,29 @@ mod tests {
         assert_eq!(read("typing-5"), None);
         drop(tx);
     }
+
+    /// Yields `items`, then ends.
+    struct Script(std::collections::VecDeque<linksy_core::keyboard::KeyInput>);
+
+    impl crate::keyboard::Source for Script {
+        fn next(&mut self) -> impl std::future::Future<Output = Option<linksy_core::keyboard::KeyInput>> + Send {
+            std::future::ready(self.0.pop_front())
+        }
+    }
+
+    #[test]
+    fn the_typing_task_leaves_the_entry_for_the_reader_after_the_source_ends() {
+        use linksy_core::keyboard::KeyInput;
+        let (tx, closed) = add_incoming("typing-6", peer());
+        let items = (0..3).map(|i| KeyInput::Text(format!("t{i}"))).collect();
+        let rt = tokio::runtime::Builder::new_current_thread().enable_time().build().unwrap();
+        // The same task `run_typing` spawns, run to the source's EOF.
+        rt.block_on(pump_typing(Script(items), tx, closed));
+        assert!(handle("typing-6").is_some(), "the task must not forget the entry at EOF");
+        for i in 0..3 {
+            assert_eq!(read("typing-6"), Some(format!("Tt{i}").into_bytes()));
+        }
+        assert_eq!(read("typing-6"), None);
+        assert!(handle("typing-6").is_none());
+    }
 }

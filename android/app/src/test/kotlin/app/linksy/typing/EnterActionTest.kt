@@ -20,6 +20,12 @@ class EnterActionTest {
         assertNull(EnterAction.of(EditorInfo.IME_ACTION_SEND or EditorInfo.IME_FLAG_NO_ENTER_ACTION))
     }
 
+    @Test fun nextAndPreviousMoveFocusSoTheyAreNotAnEnterAction() {
+        assertNull(EnterAction.of(EditorInfo.IME_ACTION_NEXT))
+        assertNull(EnterAction.of(EditorInfo.IME_ACTION_PREVIOUS))
+        assertNull(EnterAction.of(EditorInfo.IME_ACTION_NEXT or EditorInfo.IME_FLAG_NO_EXTRACT_UI))
+    }
+
     @Test fun multiLineComesFromTheInputType() {
         assertTrue(EnterAction.isMultiLine(InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE))
         assertFalse(EnterAction.isMultiLine(InputType.TYPE_CLASS_TEXT))
