@@ -42,7 +42,7 @@ sealed interface ControlMsg {
             } catch (_: JSONException) {
                 return null
             }
-            return when (o.opt("type")) {
+            return when (o.optString("type")) {
                 "pointer" -> {
                     val x = number(o, "x") ?: return null
                     val y = number(o, "y") ?: return null
