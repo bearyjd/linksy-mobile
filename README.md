@@ -62,7 +62,9 @@ Touch control from a computer is possible with the separate, optional
 [Linksy Control](https://github.com/bearyjd/linksy-control) companion app (its README says how to
 install it). Linksy only talks to it when it is installed, turned on in Android's Accessibility
 settings, paired, and you switched on Permissions › Control from your computer; otherwise nothing
-changes. **Experimental: neither side has been run on a phone yet.**
+changes. It also only trusts a companion signed with the certificate pinned when the app is built
+(`-PcompanionCertSha256=<64 hex>`); a build without that pin never offers control, and control
+needs Android 9 or newer. **Experimental: neither side has been run on a phone yet.**
 
 Not possible in a sideloaded app (see [`docs/android-app.md`](docs/android-app.md) §3): texting, mirroring
 the phone's notifications or its media, remote control of the phone without the companion app above, watching its
