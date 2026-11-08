@@ -3,9 +3,12 @@ package app.linksy.typing
 import android.view.KeyEvent
 
 /// X11 keysyms (what the computer sends) to Android key codes, only for the
-/// keys a text field needs. Anything else (Ctrl, Alt, Super, Meta, power, media
-/// and launcher keys, Caps/Num Lock, Print, Menu) is refused: it would act
-/// outside the focused field or reach the clipboard.
+/// keys that cannot act outside the focused field: letters, digits, space,
+/// Backspace, Delete, Home, End and Shift. Everything else is refused: Ctrl,
+/// Alt, Super, Meta, power, media and launcher keys, Caps/Num Lock, Print and
+/// Menu would act outside the field or reach the clipboard; Tab, the arrows
+/// (at the field's edge they move focus), Page Up/Down, Escape (Back) and
+/// F-keys would act on other views; Enter is never a key (see [Typist]).
 object KeysymMap {
     fun keyCode(keysym: Long): Int? = when (keysym) {
         in 0x61L..0x7AL -> KeyEvent.KEYCODE_A + (keysym - 0x61L).toInt()
@@ -14,18 +17,8 @@ object KeysymMap {
         0x20L -> KeyEvent.KEYCODE_SPACE
         0xFF08L -> KeyEvent.KEYCODE_DEL
         0xFFFFL -> KeyEvent.KEYCODE_FORWARD_DEL
-        0xFF0DL, 0xFF8DL -> KeyEvent.KEYCODE_ENTER
-        0xFF09L -> KeyEvent.KEYCODE_TAB
-        0xFF1BL -> KeyEvent.KEYCODE_ESCAPE
         0xFF50L -> KeyEvent.KEYCODE_MOVE_HOME
-        0xFF51L -> KeyEvent.KEYCODE_DPAD_LEFT
-        0xFF52L -> KeyEvent.KEYCODE_DPAD_UP
-        0xFF53L -> KeyEvent.KEYCODE_DPAD_RIGHT
-        0xFF54L -> KeyEvent.KEYCODE_DPAD_DOWN
-        0xFF55L -> KeyEvent.KEYCODE_PAGE_UP
-        0xFF56L -> KeyEvent.KEYCODE_PAGE_DOWN
         0xFF57L -> KeyEvent.KEYCODE_MOVE_END
-        in 0xFFBEL..0xFFC9L -> KeyEvent.KEYCODE_F1 + (keysym - 0xFFBEL).toInt()
         0xFFE1L -> KeyEvent.KEYCODE_SHIFT_LEFT
         0xFFE2L -> KeyEvent.KEYCODE_SHIFT_RIGHT
         else -> null

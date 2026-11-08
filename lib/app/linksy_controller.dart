@@ -2178,6 +2178,11 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
       // A computer typing on this phone: Android reads it for Linksy Keyboard.
       case SessionStarted(:final session, :final peer, kind: SessionKind.input)
           when e.sharing:
+        if (!keyboardOn) {
+          // Turned off while this was on its way: end it, never type it.
+          unawaited(node.endSession(session).catchError((Object _) {}));
+          break;
+        }
         typing[session] = e;
         LinksyPlatform.startTyping(session, peer.name);
         unawaited(refreshKeyboard());

@@ -91,10 +91,11 @@ class LinksyKeyboardService : InputMethodService() {
     }
 
     /// True if the field took it (or it was dropped on purpose).
-    fun type(event: TypingEvent): Boolean = typist?.apply(event) ?: false
+    fun type(session: String, event: TypingEvent): Boolean = typist?.apply(event, session) ?: false
 
-    fun releaseAll() {
-        typist?.releaseAll()
+    /// Lets go of the keys [session] holds, or every session's.
+    fun releaseAll(session: String? = null) {
+        typist?.releaseAll(session)
     }
 
     /// What the view says: who types, or that nothing does now.

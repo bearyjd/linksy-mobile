@@ -74,38 +74,41 @@ object Typing {
     }
 
     /// One reader per session. At most [IN_FLIGHT] events wait for the main
-    /// thread, which is never blocked: only this thread waits for room.
+    /// thread, which is never blocked: only this thread waits for room. Reads
+    /// only while the session is still in the gate, and always ends the core
+    /// side when it stops (unless a newer session has taken the id).
     private fun read(app: Context, session: String, generation: Int) {
         val room = Backpressure(IN_FLIGHT)
         var gotSome = false
         var tries = 0
-        while (true) {
+        while (gate.canRead(session, generation)) {
             val bytes = NativeSession.read(session)
             if (bytes == null) {
                 if (!gotSome && tries++ < REGISTER_TRIES) {
                     Thread.sleep(REGISTER_WAIT_MS)
                     continue
                 }
-                // Never registered: end it, rather than leave it open.
-                if (!gotSome) NativeSession.finish(session)
                 break
             }
             gotSome = true
             val event = TypingEvent.decode(bytes) ?: continue
-            if (!room.acquire { session in gate.sessions() }) break
+            if (!room.acquire { gate.canRead(session, generation) }) break
+            // Posted for the field open now: not typed into another one.
+            val field = gate.fieldGeneration()
             main.post {
                 try {
-                    if (gate.canType(session, generation)) deliver(event)
+                    if (gate.canType(session, generation, field)) deliver(session, event)
                 } finally {
                     room.release()
                 }
             }
         }
-        main.post { ended(app, session) }
+        if (!gate.replaced(session, generation)) NativeSession.finish(session)
+        main.post { ended(app, session, generation) }
     }
 
-    private fun deliver(event: TypingEvent) {
-        val took = service?.type(event) ?: false
+    private fun deliver(session: String, event: TypingEvent) {
+        val took = service?.type(session, event) ?: false
         if (gate.delivered(took)) changed()
     }
 
@@ -114,6 +117,8 @@ object Typing {
     fun stop(session: String) {
         gate.end(session)
         NativeSession.finish(session)
+        // Its own held keys, now; the rest of the keys only with the last session.
+        service?.releaseAll(session)
         if (gate.sessions().isEmpty()) service?.releaseAll()
     }
 
@@ -135,8 +140,10 @@ object Typing {
         shown.forEach { (session, peer) -> if (session in gate.sessions()) notice(app, session, peer) }
     }
 
-    private fun ended(app: Context, session: String) {
-        gate.end(session)
+    private fun ended(app: Context, session: String, generation: Int) {
+        // A late end from an old reader must not end a newer session with this id.
+        if (!gate.end(session, generation)) return
+        service?.releaseAll(session)
         synchronized(peers) { peers.remove(session) }
         app.getSystemService(NotificationManager::class.java).cancel(NOTIFICATION + session.hashCode())
         Logs.add("Typing: session ended")

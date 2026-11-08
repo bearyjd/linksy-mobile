@@ -144,7 +144,8 @@ fn run_typing(mut typing: linksy_core::keyboard::KeyboardInput) {
     let (tx, closed) = add_incoming(&id, typing.peer.id);
     rt().spawn(async move {
         crate::keyboard::forward(&mut typing, tx, closed).await;
-        sessions().lock().unwrap().remove(&id);
+        // The entry stays until the app has read what is still queued ([`read`]
+        // forgets it then); only [`end`] discards queued input.
         // Dropping it ends the session; core then reports `SessionEnded`.
         drop(typing);
     });
@@ -184,8 +185,18 @@ pub(crate) fn camera_state(id: &str, json: &str) {
 /// The next bytes from the other side, blocking; None once it's over.
 pub(crate) fn read(id: &str) -> Option<Vec<u8>> {
     let h = handle(id)?;
-    let mut slot = h.incoming.lock().unwrap();
-    slot.as_mut()?.blocking_recv()
+    let next = {
+        let mut slot = h.incoming.lock().unwrap();
+        slot.as_mut()?.blocking_recv()
+    };
+    if next.is_none() {
+        // Over and drained: forget it, unless the id already belongs to a newer session.
+        let mut map = sessions().lock().unwrap();
+        if map.get(id).is_some_and(|now| Arc::ptr_eq(now, &h)) {
+            map.remove(id);
+        }
+    }
+    next
 }
 
 /// What arrives on a session, for a reader in Dart (a terminal's output):
