@@ -35,7 +35,11 @@ impl Source for linksy_core::keyboard::KeyboardInput {
 
 /// Passes what `source` yields on to `tx`, encoded, until the source ends, the
 /// reader is gone or `closed` is notified. Never logs what was typed.
-pub(crate) async fn forward(source: &mut impl Source, tx: mpsc::Sender<Vec<u8>>, closed: Arc<Notify>) {
+pub(crate) async fn forward(
+    source: &mut impl Source,
+    tx: mpsc::Sender<Vec<u8>>,
+    closed: Arc<Notify>,
+) {
     loop {
         let input = tokio::select! {
             biased;
@@ -66,28 +70,53 @@ mod tests {
 
     impl Source for Script {
         fn next(&mut self) -> impl Future<Output = Option<KeyInput>> + Send {
-            let next = if self.endless { Some(KeyInput::Text("x".into())) } else { self.items.pop_front() };
+            let next = if self.endless {
+                Some(KeyInput::Text("x".into()))
+            } else {
+                self.items.pop_front()
+            };
             std::future::ready(next)
         }
     }
 
     fn scripted(items: Vec<KeyInput>) -> Script {
-        Script { items: items.into(), endless: false }
+        Script {
+            items: items.into(),
+            endless: false,
+        }
     }
 
     fn endless() -> Script {
-        Script { items: VecDeque::new(), endless: true }
+        Script {
+            items: VecDeque::new(),
+            endless: true,
+        }
     }
 
     #[test]
     fn encodes_text_as_t_and_utf8() {
-        assert_eq!(encode(&KeyInput::Text("hé".into())), [b'T', b'h', 0xC3, 0xA9]);
+        assert_eq!(
+            encode(&KeyInput::Text("hé".into())),
+            [b'T', b'h', 0xC3, 0xA9]
+        );
     }
 
     #[test]
     fn encodes_keys_as_k_pressed_and_big_endian_keysym() {
-        assert_eq!(encode(&KeyInput::Key { keysym: 0xFF0D, pressed: true }), [b'K', 1, 0, 0, 0xFF, 0x0D]);
-        assert_eq!(encode(&KeyInput::Key { keysym: 0x0100_20AC, pressed: false }), [b'K', 0, 1, 0, 0x20, 0xAC]);
+        assert_eq!(
+            encode(&KeyInput::Key {
+                keysym: 0xFF0D,
+                pressed: true
+            }),
+            [b'K', 1, 0, 0, 0xFF, 0x0D]
+        );
+        assert_eq!(
+            encode(&KeyInput::Key {
+                keysym: 0x0100_20AC,
+                pressed: false
+            }),
+            [b'K', 0, 1, 0, 0x20, 0xAC]
+        );
     }
 
     #[tokio::test]
@@ -95,8 +124,14 @@ mod tests {
         let (tx, mut rx) = mpsc::channel(8);
         let input = vec![
             KeyInput::Text("a".into()),
-            KeyInput::Key { keysym: 0xFF08, pressed: true },
-            KeyInput::Key { keysym: 0xFF08, pressed: false },
+            KeyInput::Key {
+                keysym: 0xFF08,
+                pressed: true,
+            },
+            KeyInput::Key {
+                keysym: 0xFF08,
+                pressed: false,
+            },
         ];
         forward(&mut scripted(input.clone()), tx, Arc::new(Notify::new())).await;
         let mut got = Vec::new();
@@ -112,9 +147,12 @@ mod tests {
         let closed = Arc::new(Notify::new());
         // `notify_one` keeps its permit until a waiter takes it.
         closed.notify_one();
-        tokio::time::timeout(std::time::Duration::from_secs(2), forward(&mut endless(), tx, closed))
-            .await
-            .expect("forward must return when closed");
+        tokio::time::timeout(
+            std::time::Duration::from_secs(2),
+            forward(&mut endless(), tx, closed),
+        )
+        .await
+        .expect("forward must return when closed");
         assert!(rx.recv().await.is_none() || rx.try_recv().is_err());
     }
 
@@ -122,9 +160,12 @@ mod tests {
     async fn stops_when_the_reader_is_gone() {
         let (tx, rx) = mpsc::channel(1);
         drop(rx);
-        tokio::time::timeout(std::time::Duration::from_secs(2), forward(&mut endless(), tx, Arc::new(Notify::new())))
-            .await
-            .expect("forward must return when nobody reads");
+        tokio::time::timeout(
+            std::time::Duration::from_secs(2),
+            forward(&mut endless(), tx, Arc::new(Notify::new())),
+        )
+        .await
+        .expect("forward must return when nobody reads");
     }
 
     #[test]

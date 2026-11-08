@@ -3307,7 +3307,7 @@ class AppLocalizationsMg extends AppLocalizations {
 
   @override
   String get keyboardCardWhy =>
-      'Avelao ny solosaina mifandray hanoratra ao amin\'ny boaty misokatra amin\'ity finday ity, amin\'ny alalan\'i Linksy Keyboard. Manontany anao isaky ny mitranga izy, ary tsy mamaky mihitsy ny kianja izay soratanao ianao.';
+      'Avelao ny solosaina mifandray hanoratra ao amin\'ny boaty misokatra amin\'ity finday ity, amin\'ny alalan\'i Linksy Keyboard. Manontany anao isaky ny mitranga izy, ary tsy mamaky mihitsy ny fitendry izay soratanao ianao.';
 
   @override
   String get keyboardTurnOn => 'Alefaso';
@@ -3316,14 +3316,14 @@ class AppLocalizationsMg extends AppLocalizations {
   String get keyboardTurnOff => 'Vonoy';
 
   @override
-  String get keyboardOpenSettings => 'Sokafy ny fanamboarana kianja';
+  String get keyboardOpenSettings => 'Sokafy ny fanamboarana fitendry';
 
   @override
-  String get keyboardSwitch => 'Ovay ny kianja';
+  String get keyboardSwitch => 'Ovay ny fitendry';
 
   @override
   String get keyboardStatusEnable =>
-      'Alefaso i Linksy Keyboard ao amin\'ny fanamboarana kianja an\'i Android.';
+      'Alefaso i Linksy Keyboard ao amin\'ny fanamboarana fitendry an\'i Android.';
 
   @override
   String get keyboardStatusReady =>
@@ -3335,7 +3335,7 @@ class AppLocalizationsMg extends AppLocalizations {
 
   @override
   String get keyboardStatusActive =>
-      'Manoratra amin\'ny alalan\'i Linksy Keyboard ny solosainao. Ovay ny kianja raha hampitsahatra.';
+      'Manoratra amin\'ny alalan\'i Linksy Keyboard ny solosainao. Ovay ny fitendry raha hampitsahatra.';
 
   @override
   String sharingTypeRequestTitle(String name) {
