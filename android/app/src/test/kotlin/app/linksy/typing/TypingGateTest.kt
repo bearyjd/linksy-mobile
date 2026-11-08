@@ -42,6 +42,50 @@ class TypingGateTest {
         assertTrue(gate.canType("s", second))
     }
 
+    @Test fun eventsPostedForAnOldFieldNeverRunInTheNewOne() {
+        val gate = TypingGate()
+        val g = gate.begin("s")
+        gate.setField(FieldState.Typable)
+        val posted = gate.fieldGeneration()
+        assertTrue(gate.canType("s", g, posted))
+        // The user moves to another field (onStartInput), also typable.
+        gate.setField(FieldState.Typable)
+        assertFalse(gate.canType("s", g, posted))
+        assertTrue(gate.canType("s", g, gate.fieldGeneration()))
+    }
+
+    @Test fun aLateEndFromAnOldReaderCannotEndANewerSessionWithTheSameId() {
+        val gate = TypingGate()
+        gate.setField(FieldState.Typable)
+        val old = gate.begin("s")
+        gate.end("s")
+        val newer = gate.begin("s")
+        assertTrue(gate.replaced("s", old))
+        assertFalse(gate.end("s", old))
+        assertTrue(gate.canType("s", newer))
+        assertFalse(gate.replaced("s", newer))
+        assertTrue(gate.end("s", newer))
+        assertTrue(gate.sessions().isEmpty())
+    }
+
+    @Test fun endingAnAlreadyEndedSessionByItsGenerationStillCleansUp() {
+        val gate = TypingGate()
+        val g = gate.begin("s")
+        gate.end("s")
+        assertTrue(gate.end("s", g))
+    }
+
+    @Test fun aReaderMayReadOnlyWhileItsSessionIsStillInTheGate() {
+        val gate = TypingGate()
+        val g = gate.begin("s")
+        assertTrue(gate.canRead("s", g))
+        gate.end("s")
+        assertFalse(gate.canRead("s", g))
+        val next = gate.begin("s")
+        assertFalse(gate.canRead("s", g))
+        assertTrue(gate.canRead("s", next))
+    }
+
     @Test fun aRefusedDeliveryIsShownAndRecovers() {
         val gate = TypingGate()
         val g = gate.begin("s")

@@ -28,7 +28,7 @@ class BackpressureTest {
         assertTrue(limit.acquire { true })
     }
 
-    @Test fun waitsForARelease() {
+    @Test(timeout = 2000) fun waitsForARelease() {
         val limit = Backpressure(1)
         assertTrue(limit.acquire { true })
         Thread { Thread.sleep(80); limit.release() }.start()

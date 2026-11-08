@@ -300,4 +300,30 @@ mod tests {
         assert_eq!(read("typing-3"), None);
         end("typing-3");
     }
+
+    #[test]
+    fn a_close_after_a_burst_still_delivers_every_queued_event_then_ends() {
+        let (tx, _closed) = add_incoming("typing-4", peer());
+        for i in 0..200u32 {
+            tx.blocking_send(i.to_be_bytes().to_vec()).unwrap();
+        }
+        // The stream hit EOF: the source is gone, the entry must stay for the reader.
+        drop(tx);
+        assert!(handle("typing-4").is_some());
+        for i in 0..200u32 {
+            assert_eq!(read("typing-4"), Some(i.to_be_bytes().to_vec()));
+        }
+        assert_eq!(read("typing-4"), None);
+        // Drained: now it is forgotten.
+        assert!(handle("typing-4").is_none());
+    }
+
+    #[test]
+    fn ending_by_the_user_discards_what_was_queued() {
+        let (tx, _closed) = add_incoming("typing-5", peer());
+        tx.blocking_send(b"Tx".to_vec()).unwrap();
+        end("typing-5");
+        assert_eq!(read("typing-5"), None);
+        drop(tx);
+    }
 }

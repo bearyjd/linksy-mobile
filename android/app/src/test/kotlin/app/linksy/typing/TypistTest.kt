@@ -58,16 +58,71 @@ class TypistTest {
         assertEquals(listOf("finish", "action:${EditorInfo.IME_ACTION_SEARCH}"), editor.calls)
     }
 
-    @Test fun enterIsAKeyWhereTheFieldHasNoAction() {
+    @Test fun enterIsANewlineInAMultiLineFieldEvenWithAnAction() {
         val editor = FakeEditor(multiLine = true, enterAction = EditorInfo.IME_ACTION_SEND)
-        Typist(editor).apply(key(0xFF0D, true))
-        assertEquals(
-            listOf("finish", "key:${KeyEvent.KEYCODE_ENTER}:down:0", "key:${KeyEvent.KEYCODE_ENTER}:up:0"),
-            editor.calls,
-        )
-        val plain = FakeEditor(multiLine = false, enterAction = null)
-        Typist(plain).apply(key(0xFF8D, true))
-        assertEquals(KeyEvent.KEYCODE_ENTER, plain.calls[1].split(":")[1].toInt())
+        val typist = Typist(editor)
+        assertTrue(typist.apply(key(0xFF0D, true)))
+        typist.apply(key(0xFF0D, false))
+        assertEquals(listOf("finish", "commit:\n"), editor.calls)
+    }
+
+    @Test fun enterWithNoActionInASingleLineFieldDoesNothingAndIsRefused() {
+        // Never a key event: it could press whatever button has focus.
+        for (keysym in longArrayOf(0xFF0D, 0xFF8D)) {
+            val editor = FakeEditor(multiLine = false, enterAction = null)
+            assertFalse(Typist(editor).apply(key(keysym, true)))
+            assertEquals(listOf("finish"), editor.calls)
+        }
+    }
+
+    @Test fun enterIsNeverSentAsAKeyEvent() {
+        for (multi in listOf(true, false)) for (action in listOf(null, EditorInfo.IME_ACTION_SEND)) {
+            val editor = FakeEditor(multiLine = multi, enterAction = action)
+            val typist = Typist(editor)
+            typist.apply(key(0xFF0D, true))
+            typist.apply(key(0xFF0D, false))
+            assertTrue(editor.calls.toString(), editor.calls.none { it.startsWith("key:") })
+        }
+    }
+
+    @Test fun focusMovingKeysAreDroppedAsDone() {
+        val editor = FakeEditor()
+        val typist = Typist(editor)
+        for (keysym in longArrayOf(0xFF09, 0xFF1B, 0xFF51, 0xFF52, 0xFF53, 0xFF54, 0xFF55, 0xFF56, 0xFFBE)) {
+            assertTrue(typist.apply(key(keysym, true)))
+            assertTrue(typist.apply(key(keysym, false)))
+        }
+        assertTrue(editor.calls.isEmpty())
+    }
+
+    @Test fun deletionAndEnterAreDroppedWhileAChordModifierIsHeld() {
+        // Ctrl+Backspace / Ctrl+Enter / Ctrl+Delete are word-delete and send shortcuts.
+        val editor = FakeEditor(multiLine = true, enterAction = EditorInfo.IME_ACTION_SEND)
+        val typist = Typist(editor)
+        typist.apply(key(0xFFE3, true))
+        for (keysym in longArrayOf(0xFF08, 0xFFFF, 0xFF0D, 0xFF8D)) assertTrue(typist.apply(key(keysym, true)))
+        assertTrue(editor.calls.isEmpty())
+        typist.apply(key(0xFFE3, false))
+        typist.apply(key(0xFF08, true))
+        assertEquals(KeyEvent.KEYCODE_DEL, editor.calls[1].split(":")[1].toInt())
+    }
+
+    @Test fun eachSessionKeepsItsOwnHeldKeysAndReleasesOnlyThose() {
+        val editor = FakeEditor()
+        val typist = Typist(editor)
+        typist.apply(key(0xFFE1, true), "a") // Shift, session a
+        typist.apply(key(0xFF50, true), "b") // Home, session b
+        typist.apply(key(0xFFE3, true), "a") // Ctrl held by a only
+        editor.calls.clear()
+        typist.releaseAll("a")
+        assertEquals(listOf("key:${KeyEvent.KEYCODE_SHIFT_LEFT}:up:0"), editor.calls)
+        // b still holds Home and a's Ctrl does not block b's letters; a's Shift is not b's meta.
+        editor.calls.clear()
+        typist.apply(key('x'.code.toLong(), true), "b")
+        assertEquals(listOf("key:${KeyEvent.KEYCODE_X}:down:0"), editor.calls)
+        editor.calls.clear()
+        typist.releaseAll("b")
+        assertEquals(setOf("key:${KeyEvent.KEYCODE_MOVE_HOME}:up:0", "key:${KeyEvent.KEYCODE_X}:up:0"), editor.calls.toSet())
     }
 
     @Test fun backspaceAndDeleteAreRealKeysTheFieldInterprets() {
@@ -144,10 +199,10 @@ class TypistTest {
         val editor = FakeEditor()
         val typist = Typist(editor)
         typist.apply(key(0xFFE3, true))
-        typist.apply(key(0xFF51, true))
-        typist.apply(key(0xFF51, false))
+        typist.apply(key(0xFF50, true))
+        typist.apply(key(0xFF50, false))
         assertEquals(
-            listOf("key:${KeyEvent.KEYCODE_DPAD_LEFT}:down:0", "key:${KeyEvent.KEYCODE_DPAD_LEFT}:up:0"),
+            listOf("key:${KeyEvent.KEYCODE_MOVE_HOME}:down:0", "key:${KeyEvent.KEYCODE_MOVE_HOME}:up:0"),
             editor.calls,
         )
     }
@@ -205,24 +260,24 @@ class TypistTest {
         val editor = FakeEditor()
         val typist = Typist(editor)
         typist.apply(key(0xFFE1, true)) // Shift
-        typist.apply(key(0xFF51, true)) // Left
+        typist.apply(key(0xFF50, true)) // Home
         editor.calls.clear()
         typist.releaseAll()
         assertEquals(
-            setOf("key:${KeyEvent.KEYCODE_SHIFT_LEFT}:up:0", "key:${KeyEvent.KEYCODE_DPAD_LEFT}:up:0"),
+            setOf("key:${KeyEvent.KEYCODE_SHIFT_LEFT}:up:0", "key:${KeyEvent.KEYCODE_MOVE_HOME}:up:0"),
             editor.calls.toSet(),
         )
         assertEquals(2, editor.calls.size)
         // Nothing more the second time, and a fresh key carries no old modifier.
         editor.calls.clear()
         typist.releaseAll()
-        typist.apply(key(0xFF51, true))
-        assertEquals(listOf("key:${KeyEvent.KEYCODE_DPAD_LEFT}:down:0"), editor.calls)
+        typist.apply(key(0xFF50, true))
+        assertEquals(listOf("key:${KeyEvent.KEYCODE_MOVE_HOME}:down:0"), editor.calls)
     }
 
     @Test fun aReleaseForAKeyNeverPressedIsIgnored() {
         val editor = FakeEditor()
-        Typist(editor).apply(key(0xFF51, false))
+        Typist(editor).apply(key(0xFF50, false))
         assertTrue(editor.calls.isEmpty())
     }
 }

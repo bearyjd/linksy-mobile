@@ -8,21 +8,20 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class KeysymMapTest {
-    @Test fun mapsTheKeysAFieldNeeds() {
-        assertEquals(KeyEvent.KEYCODE_ENTER, KeysymMap.keyCode(0xFF0D))
-        assertEquals(KeyEvent.KEYCODE_ENTER, KeysymMap.keyCode(0xFF8D))
-        assertEquals(KeyEvent.KEYCODE_TAB, KeysymMap.keyCode(0xFF09))
-        assertEquals(KeyEvent.KEYCODE_ESCAPE, KeysymMap.keyCode(0xFF1B))
-        assertEquals(KeyEvent.KEYCODE_DPAD_LEFT, KeysymMap.keyCode(0xFF51))
-        assertEquals(KeyEvent.KEYCODE_DPAD_UP, KeysymMap.keyCode(0xFF52))
-        assertEquals(KeyEvent.KEYCODE_DPAD_RIGHT, KeysymMap.keyCode(0xFF53))
-        assertEquals(KeyEvent.KEYCODE_DPAD_DOWN, KeysymMap.keyCode(0xFF54))
+    @Test fun mapsOnlyKeysThatStayInsideTheField() {
         assertEquals(KeyEvent.KEYCODE_MOVE_HOME, KeysymMap.keyCode(0xFF50))
         assertEquals(KeyEvent.KEYCODE_MOVE_END, KeysymMap.keyCode(0xFF57))
-        assertEquals(KeyEvent.KEYCODE_PAGE_UP, KeysymMap.keyCode(0xFF55))
-        assertEquals(KeyEvent.KEYCODE_PAGE_DOWN, KeysymMap.keyCode(0xFF56))
-        assertEquals(KeyEvent.KEYCODE_F1, KeysymMap.keyCode(0xFFBE))
-        assertEquals(KeyEvent.KEYCODE_F12, KeysymMap.keyCode(0xFFC9))
+    }
+
+    @Test fun refusesKeysThatMoveFocusOrLeaveTheField() {
+        // Tab, Escape (Back), the arrows (they leave the field at its edge), paging, F-keys, and Enter
+        // (the Typist turns Enter into text or the field's action, never a key).
+        val names = mapOf(
+            0xFF09L to "Tab", 0xFF1BL to "Escape", 0xFF51L to "Left", 0xFF52L to "Up", 0xFF53L to "Right",
+            0xFF54L to "Down", 0xFF55L to "PageUp", 0xFF56L to "PageDown", 0xFFBEL to "F1", 0xFFC9L to "F12",
+            0xFF0DL to "Return", 0xFF8DL to "KP_Enter",
+        )
+        for ((keysym, name) in names) assertNull(name, KeysymMap.keyCode(keysym))
     }
 
     @Test fun lettersAndDigitsServeShortcuts() {

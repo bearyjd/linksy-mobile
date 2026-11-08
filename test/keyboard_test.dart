@@ -127,6 +127,8 @@ void main() {
   testWidgets('a computer typing goes to the keyboard, not to the sharing '
       'service or the touchpad', (tester) async {
     final (c, node) = await start(tester);
+    await c.setKeyboard(true);
+    calls.clear();
     node.events$.add(
       const SessionStarted(
         session: 'type-1',
@@ -157,6 +159,27 @@ void main() {
 
     node.events$.add(const SessionEnded('type-1'));
     await tester.pump();
+    expect(c.typing, isEmpty);
+    await finish(tester, c);
+  });
+
+  testWidgets('a session that starts after the card was turned off is ended, '
+      'not typed', (tester) async {
+    final (c, node) = await start(tester);
+    await c.setKeyboard(true);
+    await c.setKeyboard(false);
+    calls.clear();
+    node.events$.add(
+      const SessionStarted(
+        session: 'late-1',
+        peer: _studio,
+        kind: SessionKind.input,
+        sharing: true,
+      ),
+    );
+    await tester.pump();
+    expect(calls.where((m) => m.method == 'startTyping'), isEmpty);
+    expect(node.ended, ['late-1']);
     expect(c.typing, isEmpty);
     await finish(tester, c);
   });
