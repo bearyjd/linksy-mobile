@@ -58,11 +58,14 @@ To update, install a newer APK the same way.
 - **10 languages** (English, French, Malagasy, Spanish, Portuguese, German, Italian,
   Russian, Chinese, Japanese), first-run setup, light/dark/system appearance.
 
-Related: [linksy-control](https://github.com/bearyjd/linksy-control), optional companion for
-mouse/touch control (separate project, not working yet).
+Touch control from a computer is possible with the separate, optional
+[Linksy Control](https://github.com/bearyjd/linksy-control) companion app (its README says how to
+install it). Linksy only talks to it when it is installed, turned on in Android's Accessibility
+settings, paired, and you switched on Permissions › Control from your computer; otherwise nothing
+changes. **Experimental: neither side has been run on a phone yet.**
 
 Not possible in a sideloaded app (see [`docs/android-app.md`](docs/android-app.md) §3): texting, mirroring
-the phone's notifications or its media, remote control of the phone, watching its
+the phone's notifications or its media, remote control of the phone without the companion app above, watching its
 clipboard, background location.
 
 ---
