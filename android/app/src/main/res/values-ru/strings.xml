@@ -37,4 +37,10 @@
     <string name="copy_to_computer">Копировать на компьютер</string>
     <string name="snap_no_camera">На телефоне нет приложения камеры</string>
     <string name="channel_from_computer">С этого компьютера</string>
+    <string name="channel_typing">Ввод с компьютера</string>
+    <string name="typing_notice">%1$s может вводить текст на этом телефоне</string>
+    <string name="typing_stop">Остановить ввод</string>
+    <string name="keyboard_typing">%1$s вводит текст здесь</string>
+    <string name="keyboard_idle">Сейчас ни один компьютер не вводит текст</string>
+    <string name="keyboard_switch">Сменить клавиатуру</string>
 </resources>

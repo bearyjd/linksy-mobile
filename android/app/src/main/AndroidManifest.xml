@@ -168,6 +168,21 @@
             android:name=".KeepAlive"
             android:exported="false"
             android:foregroundServiceType="connectedDevice"/>
+        <!-- The Linksy Keyboard: a computer types on this phone through it (docs/protocol.md §4.26). -->
+        <service
+            android:name=".typing.LinksyKeyboardService"
+            android:exported="true"
+            android:label="@string/keyboard_name"
+            android:permission="android.permission.BIND_INPUT_METHOD">
+            <intent-filter>
+                <action android:name="android.view.InputMethod"/>
+            </intent-filter>
+            <meta-data android:name="android.view.im" android:resource="@xml/method"/>
+        </service>
+        <!-- Stop on the typing notification. -->
+        <receiver
+            android:name=".typing.Typing$Stop"
+            android:exported="false"/>
         <!-- Accept / Decline on the incoming-files notification. -->
         <receiver
             android:name=".TransferNotice$Answer"

@@ -37,4 +37,10 @@
     <string name="copy_to_computer">An Computer kopieren</string>
     <string name="snap_no_camera">Keine Kamera-App auf diesem Telefon</string>
     <string name="channel_from_computer">Von diesem Computer</string>
+    <string name="channel_typing">Tippen vom Computer</string>
+    <string name="typing_notice">%1$s kann auf diesem Telefon tippen</string>
+    <string name="typing_stop">Tippen beenden</string>
+    <string name="keyboard_typing">%1$s tippt hier</string>
+    <string name="keyboard_idle">Gerade tippt kein Computer</string>
+    <string name="keyboard_switch">Tastatur wechseln</string>
 </resources>

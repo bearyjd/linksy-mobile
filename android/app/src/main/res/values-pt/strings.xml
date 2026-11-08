@@ -37,4 +37,10 @@
     <string name="copy_to_computer">Copiar para o computador</string>
     <string name="snap_no_camera">Nenhum app de câmera neste telefone</string>
     <string name="channel_from_computer">Deste computador</string>
+    <string name="channel_typing">Digitar do seu computador</string>
+    <string name="typing_notice">%1$s pode digitar neste celular</string>
+    <string name="typing_stop">Parar de digitar</string>
+    <string name="keyboard_typing">%1$s está digitando aqui</string>
+    <string name="keyboard_idle">Nenhum computador está digitando agora</string>
+    <string name="keyboard_switch">Trocar de teclado</string>
 </resources>
