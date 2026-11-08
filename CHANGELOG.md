@@ -4,6 +4,15 @@ All notable changes to Linksy for Android. Format: [Keep a Changelog](https://ke
 
 ## [Unreleased]
 
+### Added
+
+- **Type from your computer.** Permissions › Type from your computer lets a paired computer type into the field open on this phone, through Linksy Keyboard (an input method with no keys of its own). Off by default; turn it on in Android's keyboard settings and pick it when a computer asks. The phone asks every time, shows a notification with Stop while it goes on, and ends it when the screen turns off or you pick another keyboard. Linksy Keyboard never becomes your default and never reads what you type.
+- Strings for this are machine-translated in eight languages and need a native read.
+
+### Changed
+
+- Building the Rust bridge needs a core with typing on the phone (temporarily the `bearyjd/linksy-desktop` fork, commit 0c92f2f).
+
 ## [0.3.5] - 2026-11-06
 
 > [!IMPORTANT]
