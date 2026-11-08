@@ -237,5 +237,7 @@
             <action android:name="android.intent.action.MAIN"/>
             <category android:name="android.intent.category.LAUNCHER"/>
         </intent>
+        <!-- The optional Linksy Control companion (state only, no permission). -->
+        <package android:name="app.linksy.mg.control"/>
     </queries>
 </manifest>

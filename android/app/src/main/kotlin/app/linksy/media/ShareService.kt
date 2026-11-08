@@ -21,6 +21,8 @@ import app.linksy.MainActivity
 import app.linksy.Lang
 import app.linksy.Logs
 import app.linksy.R
+import app.linksy.control.ControlBridge
+import app.linksy.control.ControlCompanion
 
 /// Keeps a screen or camera share going while the user is in other apps,
 /// with a notification that says so and can stop it.
@@ -85,6 +87,7 @@ class ShareService : Service() {
             shares[session] = share
             holdAwake()
             if (screen) watchControl()
+            if (kind == "control") startBridge(session)
         } catch (e: Exception) {
             Logs.add("Sharing ($kind) couldn't start: $e")
             stop(session)
@@ -111,6 +114,8 @@ class ShareService : Service() {
     }
 
     private fun stop(session: String) {
+        bridges.remove(session)?.stop()
+        bridged.remove(session)
         webcams.remove(session)
         active.remove(session)
         kinds.remove(session)
@@ -189,12 +194,31 @@ class ShareService : Service() {
             device != null && device.isExternal && device.supportsSource(InputDevice.SOURCE_TOUCHSCREEN)
         }
 
+    // A computer's `control` session drives the phone through the companion app
+    // (docs/android-app.md): read for as long as the session lasts, and used
+    // only if the companion is installed, paired, on, and the user said yes.
+    private val bridges = mutableMapOf<String, ControlBridge>()
+    private val bridged = mutableSetOf<String>()
+
+    private fun startBridge(session: String) {
+        val main = Handler(Looper.getMainLooper())
+        val bridge = ControlBridge(this, session, ControlCompanion.mayControl(this)) { active ->
+            main.post {
+                if (!bridges.containsKey(session)) return@post
+                if (active) bridged.add(session) else bridged.remove(session)
+                checkControl()
+            }
+        }
+        bridges[session] = bridge
+        bridge.start()
+    }
+
     private fun checkControl() {
         val screen = kinds.entries.firstOrNull { it.value == "screen" || it.value == "control" }?.key
-        val now = screen != null && touchFromOutside()
+        val now = screen != null && (touchFromOutside() || bridged.contains(screen))
         if (now == controlled) return
         controlled = now
-        Logs.add(if (now) "Screen: controlled over the cable" else "Screen: control over the cable ended")
+        Logs.add(if (now) "Screen: controlled" else "Screen: control ended")
         if (screen == null) return
         val peer = peers[screen] ?: Lang.str(this, R.string.your_computer)
         getSystemService(NotificationManager::class.java).notify(NOTIFICATION, notification(screenText(peer), screen))
