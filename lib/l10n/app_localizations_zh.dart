@@ -1676,14 +1676,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String sharingInputRequestTitle(String name) {
-    return '$name 想把这部手机用作触控板';
-  }
-
-  @override
-  String get sharingInputRequestDetail => '异常请求：电脑不会这样请求。请不要允许。';
-
-  @override
   String sharingMicrophoneRequestTitle(String name) {
     return '$name 想使用你的麦克风';
   }
@@ -3152,4 +3144,44 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get deckStartEmpty => '从空白开始';
+
+  @override
+  String get keyboardCardTitle => '从电脑输入';
+
+  @override
+  String get keyboardCardWhy =>
+      '允许已配对的电脑通过 Linksy Keyboard 在这部手机上打开的输入框中输入。每次都会询问你，键盘也不会读取你自己输入的内容。';
+
+  @override
+  String get keyboardTurnOn => '开启';
+
+  @override
+  String get keyboardTurnOff => '关闭';
+
+  @override
+  String get keyboardOpenSettings => '打开键盘设置';
+
+  @override
+  String get keyboardSwitch => '切换键盘';
+
+  @override
+  String get keyboardStatusEnable => '请在 Android 的键盘设置中开启 Linksy Keyboard。';
+
+  @override
+  String get keyboardStatusReady => '已就绪。电脑请求输入时，请允许并选择 Linksy Keyboard。';
+
+  @override
+  String get keyboardStatusSwitch => '你的电脑想要输入。请切换到 Linksy Keyboard。';
+
+  @override
+  String get keyboardStatusActive => '你的电脑正在通过 Linksy Keyboard 输入。切换键盘即可停止。';
+
+  @override
+  String sharingTypeRequestTitle(String name) {
+    return '$name 想在这部手机上输入';
+  }
+
+  @override
+  String get sharingTypeRequestDetail =>
+      '它会通过 Linksy Keyboard 在打开的输入框中输入，直到你在通知中停止。';
 }

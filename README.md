@@ -51,9 +51,15 @@ To update, install a newer APK the same way.
 - **Sessions:** screen sharing, **webcam** (full controls, 720p/1080p, 30/60 fps, controls
   from the computer), **microphone**, second display in the phone's shape, watching and
   controlling the computer's screen, touchpad/keyboard/slides.
+- **Type from your computer:** Linksy Keyboard (an input method with no keys of its own) lets
+  a paired computer type into the field open on the phone. Off by default; Android has you turn
+  it on and pick it, and the phone asks every time.
 - **And more:** device pictures both ways, locate (opt-in), service notices, push news.
 - **10 languages** (English, French, Malagasy, Spanish, Portuguese, German, Italian,
   Russian, Chinese, Japanese), first-run setup, light/dark/system appearance.
+
+Related: [linksy-control](https://github.com/bearyjd/linksy-control), optional companion for
+mouse/touch control (separate project, not working yet).
 
 Not possible in a sideloaded app (see [`docs/android-app.md`](docs/android-app.md) §3): texting, mirroring
 the phone's notifications or its media, remote control of the phone, watching its

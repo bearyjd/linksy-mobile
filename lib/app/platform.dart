@@ -876,6 +876,35 @@ abstract final class LinksyPlatform {
     'peerId': peerId,
   });
 
+  /// A computer typing on this phone: Android starts reading [session] for
+  /// the Linksy Keyboard, and asks which keyboard to use if it is on but not
+  /// the one in use.
+  static Future<void> startTyping(String session, String peer) =>
+      _call<void>('startTyping', {'session': session, 'peer': peer});
+
+  /// Ends every typing session on this phone at once, dropping what Android
+  /// has queued but not typed (the Linksy Keyboard card turned off).
+  static Future<void> stopTyping() => _call<void>('stopTyping');
+
+  /// Whether Linksy Keyboard is turned on in Android's settings, is the
+  /// keyboard in use, and whether a computer is typing through it now.
+  static Future<({bool enabled, bool current, bool typing})>
+  keyboardState() async {
+    final m = await _call<Map<Object?, Object?>>('keyboardState');
+    return (
+      enabled: m?['enabled'] == true,
+      current: m?['current'] == true,
+      typing: m?['typing'] == true,
+    );
+  }
+
+  /// Android's keyboard settings, where Linksy Keyboard is turned on.
+  static Future<void> openKeyboardSettings() =>
+      _call<void>('openKeyboardSettings');
+
+  /// Android's "choose keyboard" picker.
+  static Future<void> showKeyboardPicker() => _call<void>('showKeyboardPicker');
+
   /// Shares Android's service runs now: (session, kind, peer id). The app
   /// may have restarted while one went on.
   static Future<List<(String, String, String)>> activeShares() async => [

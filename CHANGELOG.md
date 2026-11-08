@@ -4,6 +4,17 @@ All notable changes to Linksy for Android. Format: [Keep a Changelog](https://ke
 
 ## [Unreleased]
 
+### Added
+
+- **Type from your computer.** Permissions › Type from your computer lets a paired computer type into the field open on this phone, through Linksy Keyboard (an input method with no keys of its own). Off by default; turn it on in Android's keyboard settings and pick it when a computer asks. The phone asks every time, shows a notification with Stop while it goes on, and ends it when the screen turns off or you pick another keyboard. Linksy Keyboard never reads what you type, and it switches back to your previous keyboard as soon as the last computer stops (if it is your only keyboard, it says so).
+- While it types: Stop, turning the card off, the screen turning off, or picking another keyboard stop it at once, and nothing already on its way is typed. Password fields pause it; fields that cannot take typing say so. Ctrl/Alt shortcuts from the computer are not passed on, so typing never touches the phone's clipboard (nor does Ctrl+Backspace or Ctrl+Enter do anything). Tab, Escape and the arrow keys are not passed on either, and Enter only adds a line, runs the field's own action (Send, Search...) or does nothing, so typing can't move focus to or press a button. Typing queued for one field is dropped, not typed into the next. A chat app restarting the same field (after Send or a suggestion) no longer drops what is on its way, and Ctrl keeps working across it. Enter on a field whose action is Next or Previous does nothing (it would move focus). A computer that starts typing just after you turned the card off is ended, and a burst typed right before the computer disconnects arrives whole.
+- Strings for this are machine-translated in all languages but English (nine, Malagasy included) and need a native read.
+
+### Changed
+
+- Removed the unused touchpad-request strings (`sharingInputRequestTitle`, `sharingInputRequestDetail`) from every language.
+- Building the Rust bridge needs a core with typing on the phone (temporarily the `bearyjd/linksy-desktop` fork, commit 0c92f2f).
+
 ## [0.3.5] - 2026-11-06
 
 > [!IMPORTANT]

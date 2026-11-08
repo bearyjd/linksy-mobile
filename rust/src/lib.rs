@@ -8,4 +8,5 @@ mod files;
 mod gallery;
 mod preflight;
 mod heartbeats;
+mod keyboard;
 mod sessions;

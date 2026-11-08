@@ -37,4 +37,13 @@
     <string name="copy_to_computer">Copiar al ordenador</string>
     <string name="snap_no_camera">No hay app de cámara en este teléfono</string>
     <string name="channel_from_computer">De este ordenador</string>
+    <string name="channel_typing">Escribir desde tu computadora</string>
+    <string name="typing_notice">%1$s puede escribir en este teléfono</string>
+    <string name="typing_stop">Dejar de escribir</string>
+    <string name="keyboard_typing">%1$s está escribiendo aquí</string>
+    <string name="keyboard_idle">Ninguna computadora está escribiendo ahora</string>
+    <string name="keyboard_switch">Cambiar de teclado</string>
+    <string name="keyboard_paused_password">En pausa: campo de contraseña</string>
+    <string name="keyboard_unsupported">El ordenador no puede escribir en este campo</string>
+    <string name="keyboard_hint">Linksy Keyboard no tiene teclas. Cambia a otro teclado para escribir en el teléfono.</string>
 </resources>

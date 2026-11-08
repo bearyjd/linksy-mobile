@@ -466,8 +466,6 @@
   "sharingControlRequestDetail": "Mahita ny efijerin'ity finday ity {name} ary afaka mikasika, mikosoka sy manoratra eo mandra-pampitsaharinao. Hangataka fanamafisana i Android avy eo.",
   "sharingCameraRequestTitle": "Te hampiasa ny fakantsarinao {name}",
   "sharingCameraRequestDetail": "Azon'i {name} ho webcam ny fakantsarin'ity finday ity mandra-pampitsaharinao. Ao amin'i Linksy ny zoom, fahazavan-tsary, hazavana, lantihy ary fihodinana mandritra izany.",
-  "sharingInputRequestTitle": "Te hampiasa ity finday ity ho touchpad {name}",
-  "sharingInputRequestDetail": "Tsy nampoizina: tsy mangataka izany ny solosaina. Aza avela.",
   "sharingMicrophoneRequestTitle": "Te hampiasa ny mikrônao {name}",
   "sharingMicrophoneRequestDetail": "Mandre ny mikrôn'ity finday ity {name} mandra-pampitsaharinao, ho mikrô azon'ny app rehetra ao aminy ampiasaina. Hangataka fanamafisana i Android avy eo.",
   "sharingDisplayRequestTitle": "Te hampiasa ity efijery ity ho efijery faharoa {name}",
@@ -886,5 +884,17 @@
   "deckWidth": "Sakany",
   "deckHeight": "Haavo",
   "deckStartFromPortrait": "Manomboka amin'ny deck mitsangana",
-  "deckStartEmpty": "Manomboka banga"
+  "deckStartEmpty": "Manomboka banga",
+  "keyboardCardTitle": "Soratana avy amin'ny solosainao",
+  "keyboardCardWhy": "Avelao ny solosaina mifandray hanoratra ao amin'ny boaty misokatra amin'ity finday ity, amin'ny alalan'i Linksy Keyboard. Manontany anao isaky ny mitranga izy, ary tsy mamaky mihitsy ny fitendry izay soratanao ianao.",
+  "keyboardTurnOn": "Alefaso",
+  "keyboardTurnOff": "Vonoy",
+  "keyboardOpenSettings": "Sokafy ny fanamboarana fitendry",
+  "keyboardSwitch": "Ovay ny fitendry",
+  "keyboardStatusEnable": "Alefaso i Linksy Keyboard ao amin'ny fanamboarana fitendry an'i Android.",
+  "keyboardStatusReady": "Vonona. Rehefa mangataka hanoratra ny solosainao, avelao ary fidio i Linksy Keyboard.",
+  "keyboardStatusSwitch": "Te hanoratra ny solosainao. Mifindra any amin'i Linksy Keyboard.",
+  "keyboardStatusActive": "Manoratra amin'ny alalan'i Linksy Keyboard ny solosainao. Ovay ny fitendry raha hampitsahatra.",
+  "sharingTypeRequestTitle": "Te hanoratra amin'ity finday ity {name}",
+  "sharingTypeRequestDetail": "Manoratra ao amin'ny boaty misokatra izy amin'ny alalan'i Linksy Keyboard mandra-pampitsahatrinao azy amin'ny fampandrenesana."
 }

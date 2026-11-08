@@ -37,4 +37,13 @@
     <string name="copy_to_computer">Copier vers l\'ordinateur</string>
     <string name="snap_no_camera">Aucune app appareil photo sur ce téléphone</string>
     <string name="channel_from_computer">De cet ordinateur</string>
+    <string name="channel_typing">Saisie depuis votre ordinateur</string>
+    <string name="typing_notice">%1$s peut saisir du texte sur ce téléphone</string>
+    <string name="typing_stop">Arrêter la saisie</string>
+    <string name="keyboard_typing">%1$s saisit du texte ici</string>
+    <string name="keyboard_idle">Aucun ordinateur ne saisit de texte pour le moment</string>
+    <string name="keyboard_switch">Changer de clavier</string>
+    <string name="keyboard_paused_password">En pause : champ de mot de passe</string>
+    <string name="keyboard_unsupported">L\'ordinateur ne peut pas saisir dans ce champ</string>
+    <string name="keyboard_hint">Linksy Keyboard n\'a pas de touches. Passez à un autre clavier pour saisir sur le téléphone.</string>
 </resources>

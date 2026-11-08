@@ -1746,15 +1746,6 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String sharingInputRequestTitle(String name) {
-    return '$name veut utiliser ce téléphone comme pavé tactile';
-  }
-
-  @override
-  String get sharingInputRequestDetail =>
-      'Inattendu : les ordinateurs ne demandent pas cela. Ne l’autorisez pas.';
-
-  @override
   String sharingMicrophoneRequestTitle(String name) {
     return '$name veut utiliser votre micro';
   }
@@ -3304,4 +3295,48 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get deckStartEmpty => 'Partir de zéro';
+
+  @override
+  String get keyboardCardTitle => 'Saisir depuis votre ordinateur';
+
+  @override
+  String get keyboardCardWhy =>
+      'Permet à un ordinateur associé de saisir du texte dans le champ ouvert sur ce téléphone, via Linksy Keyboard. Il vous demande à chaque fois, et le clavier ne lit jamais ce que vous saisissez vous-même.';
+
+  @override
+  String get keyboardTurnOn => 'Activer';
+
+  @override
+  String get keyboardTurnOff => 'Désactiver';
+
+  @override
+  String get keyboardOpenSettings => 'Ouvrir les réglages du clavier';
+
+  @override
+  String get keyboardSwitch => 'Changer de clavier';
+
+  @override
+  String get keyboardStatusEnable =>
+      'Activez Linksy Keyboard dans les réglages du clavier d’Android.';
+
+  @override
+  String get keyboardStatusReady =>
+      'Prêt. Quand votre ordinateur demande à saisir du texte, autorisez-le et choisissez Linksy Keyboard.';
+
+  @override
+  String get keyboardStatusSwitch =>
+      'Votre ordinateur veut saisir du texte. Passez à Linksy Keyboard.';
+
+  @override
+  String get keyboardStatusActive =>
+      'Votre ordinateur saisit du texte via Linksy Keyboard. Changez de clavier pour arrêter.';
+
+  @override
+  String sharingTypeRequestTitle(String name) {
+    return '$name veut saisir du texte sur ce téléphone';
+  }
+
+  @override
+  String get sharingTypeRequestDetail =>
+      'Il saisit dans le champ ouvert, via Linksy Keyboard, jusqu’à ce que vous l’arrêtiez depuis la notification.';
 }

@@ -42,7 +42,15 @@ pub(crate) fn collect(node: &Node) {
     let Some(mut accepted) = node.incoming_sessions() else { return };
     rt().spawn(async move {
         while let Some(session) = accepted.recv().await {
-            run(session);
+            // Only a computer typing on this phone comes in as `input`; core
+            // refuses it unless the keyboard is on.
+            if session.kind == SessionKind::Input {
+                if let Some(typing) = session.keyboard_input() {
+                    run_typing(typing);
+                }
+            } else {
+                run(session);
+            }
         }
     });
 }
@@ -112,6 +120,44 @@ pub(crate) fn run(mut session: Session) {
     });
 }
 
+/// Registers a session the phone only reads (typing): no way to write to it.
+/// The returned sender feeds [`read`]; the notify is woken by [`end`].
+fn add_incoming(id: &str, peer: linksy_core::Fingerprint) -> (mpsc::Sender<Vec<u8>>, Arc<Notify>) {
+    let (arrived, incoming) = mpsc::channel::<Vec<u8>>(256);
+    let closed = Arc::new(Notify::new());
+    sessions().lock().unwrap().insert(
+        id.to_string(),
+        Arc::new(Handle {
+            peer,
+            out: Mutex::new(None),
+            incoming: Mutex::new(Some(incoming)),
+            closed: closed.clone(),
+        }),
+    );
+    (arrived, closed)
+}
+
+/// An accepted `input` session on this phone: a computer typing (§4.26). Held
+/// until the typing ends, the user stops it or the keyboard is turned off.
+fn run_typing(typing: linksy_core::keyboard::KeyboardInput) {
+    let id = typing.id.to_string();
+    let (tx, closed) = add_incoming(&id, typing.peer.id);
+    rt().spawn(pump_typing(typing, tx, closed));
+}
+
+/// Moves what the source types into the session's queue until it ends. The
+/// entry stays until the app has read what is still queued ([`read`] forgets
+/// it then); only [`end`] discards queued input. Dropping the source ends the
+/// session; core then reports `SessionEnded`.
+async fn pump_typing(
+    mut source: impl crate::keyboard::Source + Send + 'static,
+    tx: mpsc::Sender<Vec<u8>>,
+    closed: Arc<Notify>,
+) {
+    crate::keyboard::forward(&mut source, tx, closed).await;
+    drop(source);
+}
+
 fn handle(id: &str) -> Option<Arc<Handle>> {
     sessions().lock().unwrap().get(id).cloned()
 }
@@ -146,8 +192,18 @@ pub(crate) fn camera_state(id: &str, json: &str) {
 /// The next bytes from the other side, blocking; None once it's over.
 pub(crate) fn read(id: &str) -> Option<Vec<u8>> {
     let h = handle(id)?;
-    let mut slot = h.incoming.lock().unwrap();
-    slot.as_mut()?.blocking_recv()
+    let next = {
+        let mut slot = h.incoming.lock().unwrap();
+        slot.as_mut()?.blocking_recv()
+    };
+    if next.is_none() {
+        // Over and drained: forget it, unless the id already belongs to a newer session.
+        let mut map = sessions().lock().unwrap();
+        if map.get(id).is_some_and(|now| Arc::ptr_eq(now, &h)) {
+            map.remove(id);
+        }
+    }
+    next
 }
 
 /// What arrives on a session, for a reader in Dart (a terminal's output):
@@ -220,5 +276,97 @@ mod jni_api {
         if let Some(session) = id(&mut env, &session) {
             super::end(&session);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn peer() -> linksy_core::Fingerprint {
+        linksy_core::Fingerprint::of(b"a computer")
+    }
+
+    #[test]
+    fn a_typing_session_is_read_in_order_and_cannot_be_written_to() {
+        let (tx, _closed) = add_incoming("typing-1", peer());
+        tx.blocking_send(b"Tone".to_vec()).unwrap();
+        tx.blocking_send(b"Ttwo".to_vec()).unwrap();
+        assert_eq!(read("typing-1").as_deref(), Some(&b"Tone"[..]));
+        assert_eq!(read("typing-1").as_deref(), Some(&b"Ttwo"[..]));
+        assert!(!write("typing-1", vec![1]));
+        end("typing-1");
+    }
+
+    #[test]
+    fn ending_wakes_the_session_and_forgets_it() {
+        let (tx, closed) = add_incoming("typing-2", peer());
+        end("typing-2");
+        // The permit is kept for the task that waits on it later.
+        let rt = tokio::runtime::Builder::new_current_thread().enable_time().build().unwrap();
+        rt.block_on(async {
+            tokio::time::timeout(std::time::Duration::from_secs(2), closed.notified()).await.expect("woken by end");
+        });
+        assert_eq!(read("typing-2"), None);
+        drop(tx);
+    }
+
+    #[test]
+    fn the_reader_sees_the_end_when_the_source_is_dropped() {
+        let (tx, _closed) = add_incoming("typing-3", peer());
+        drop(tx);
+        assert_eq!(read("typing-3"), None);
+        end("typing-3");
+    }
+
+    #[test]
+    fn a_close_after_a_burst_still_delivers_every_queued_event_then_ends() {
+        let (tx, _closed) = add_incoming("typing-4", peer());
+        for i in 0..200u32 {
+            tx.blocking_send(i.to_be_bytes().to_vec()).unwrap();
+        }
+        // The stream hit EOF: the source is gone, the entry must stay for the reader.
+        drop(tx);
+        assert!(handle("typing-4").is_some());
+        for i in 0..200u32 {
+            assert_eq!(read("typing-4"), Some(i.to_be_bytes().to_vec()));
+        }
+        assert_eq!(read("typing-4"), None);
+        // Drained: now it is forgotten.
+        assert!(handle("typing-4").is_none());
+    }
+
+    #[test]
+    fn ending_by_the_user_discards_what_was_queued() {
+        let (tx, _closed) = add_incoming("typing-5", peer());
+        tx.blocking_send(b"Tx".to_vec()).unwrap();
+        end("typing-5");
+        assert_eq!(read("typing-5"), None);
+        drop(tx);
+    }
+
+    /// Yields `items`, then ends.
+    struct Script(std::collections::VecDeque<linksy_core::keyboard::KeyInput>);
+
+    impl crate::keyboard::Source for Script {
+        fn next(&mut self) -> impl std::future::Future<Output = Option<linksy_core::keyboard::KeyInput>> + Send {
+            std::future::ready(self.0.pop_front())
+        }
+    }
+
+    #[test]
+    fn the_typing_task_leaves_the_entry_for_the_reader_after_the_source_ends() {
+        use linksy_core::keyboard::KeyInput;
+        let (tx, closed) = add_incoming("typing-6", peer());
+        let items = (0..3).map(|i| KeyInput::Text(format!("t{i}"))).collect();
+        let rt = tokio::runtime::Builder::new_current_thread().enable_time().build().unwrap();
+        // The same task `run_typing` spawns, run to the source's EOF.
+        rt.block_on(pump_typing(Script(items), tx, closed));
+        assert!(handle("typing-6").is_some(), "the task must not forget the entry at EOF");
+        for i in 0..3 {
+            assert_eq!(read("typing-6"), Some(format!("Tt{i}").into_bytes()));
+        }
+        assert_eq!(read("typing-6"), None);
+        assert!(handle("typing-6").is_none());
     }
 }

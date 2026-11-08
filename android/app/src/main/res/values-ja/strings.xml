@@ -37,4 +37,13 @@
     <string name="copy_to_computer">コンピュータへコピー</string>
     <string name="snap_no_camera">このスマートフォンにカメラアプリがありません</string>
     <string name="channel_from_computer">このコンピュータから</string>
+    <string name="channel_typing">コンピュータからの入力</string>
+    <string name="typing_notice">%1$sはこのスマートフォンに入力できます</string>
+    <string name="typing_stop">入力を停止</string>
+    <string name="keyboard_typing">%1$sがここに入力しています</string>
+    <string name="keyboard_idle">現在、入力しているコンピュータはありません</string>
+    <string name="keyboard_switch">キーボードを切り替え</string>
+    <string name="keyboard_paused_password">一時停止中：パスワード欄</string>
+    <string name="keyboard_unsupported">このフィールドにはパソコンから入力できません</string>
+    <string name="keyboard_hint">Linksy Keyboard にはキーがありません。スマートフォンで入力するには別のキーボードに切り替えてください。</string>
 </resources>

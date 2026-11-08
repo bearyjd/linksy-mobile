@@ -11,6 +11,7 @@ import android.os.BatteryManager
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.provider.Settings
+import android.view.inputmethod.InputMethodManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodCall
@@ -23,6 +24,7 @@ import app.linksy.media.DisplayReceiver
 import app.linksy.media.NativeSession
 import app.linksy.media.QrScanner
 import app.linksy.media.ShareService
+import app.linksy.typing.Typing
 import java.util.concurrent.Executors
 
 class MainActivity : FlutterActivity() {
@@ -592,6 +594,35 @@ class MainActivity : FlutterActivity() {
                         result.success(null)
                     }
                     "activeShares" -> result.success(ShareService.active.values.toList())
+                    // A computer typing on this phone through the Linksy Keyboard.
+                    "startTyping" -> {
+                        val session = call.argument<String>("session")
+                        if (session.isNullOrEmpty()) {
+                            result.error("bad_args", "startTyping needs a session", null)
+                            return@setMethodCallHandler
+                        }
+                        Typing.begin(this@MainActivity, session, call.argument<String>("peer") ?: Lang.str(this@MainActivity, R.string.your_computer))
+                        // Allowed just now, so Android lets this app ask which keyboard to use.
+                        val state = Typing.state(this@MainActivity)
+                        if (state["enabled"] == true && state["current"] != true) {
+                            getSystemService(InputMethodManager::class.java).showInputMethodPicker()
+                        }
+                        result.success(null)
+                    }
+                    // The card turned off: nothing already queued may be typed.
+                    "stopTyping" -> {
+                        Typing.stopAll()
+                        result.success(null)
+                    }
+                    "keyboardState" -> result.success(Typing.state(this@MainActivity))
+                    "openKeyboardSettings" -> {
+                        startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS))
+                        result.success(null)
+                    }
+                    "showKeyboardPicker" -> {
+                        getSystemService(InputMethodManager::class.java).showInputMethodPicker()
+                        result.success(null)
+                    }
                     // Where the node and history live, and where received files go.
                     "paths" -> result.success(
                         mapOf("support" to filesDir.path, "external" to getExternalFilesDir(null)?.path),

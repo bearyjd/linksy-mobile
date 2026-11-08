@@ -80,4 +80,7 @@ dependencies {
     // Flutter plugin, no analytics.
     implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
     implementation("com.google.firebase:firebase-messaging")
+
+    // Unit tests for the pure typing code (app.linksy.typing).
+    testImplementation("junit:junit:4.13.2")
 }

@@ -466,8 +466,6 @@
   "sharingControlRequestDetail": "{name} видит экран этого телефона и может нажимать, проводить и печатать на нём, пока вы не остановите. Далее Android попросит подтвердить.",
   "sharingCameraRequestTitle": "{name} хочет использовать вашу камеру",
   "sharingCameraRequestDetail": "{name} получает камеру этого телефона как веб-камеру, пока вы не остановите. Масштаб, фокус, свет, объективы и поворот — в Linksy, пока она работает.",
-  "sharingInputRequestTitle": "{name} хочет использовать этот телефон как тачпад",
-  "sharingInputRequestDetail": "Странно: компьютеры такое не запрашивают. Не разрешайте.",
   "sharingMicrophoneRequestTitle": "{name} хочет использовать ваш микрофон",
   "sharingMicrophoneRequestDetail": "{name} слышит микрофон этого телефона, пока вы не остановите, — как микрофон для любых его приложений. Далее Android попросит подтвердить.",
   "sharingDisplayRequestTitle": "{name} хочет использовать этот экран как второй дисплей",
@@ -886,5 +884,17 @@
   "deckWidth": "Ширина",
   "deckHeight": "Высота",
   "deckStartFromPortrait": "Начать с портретной панели",
-  "deckStartEmpty": "Начать с пустой"
+  "deckStartEmpty": "Начать с пустой",
+  "keyboardCardTitle": "Ввод с компьютера",
+  "keyboardCardWhy": "Позволяет подключённому компьютеру вводить текст в открытое на этом телефоне поле через Linksy Keyboard. Каждый раз он спрашивает разрешения, а клавиатура никогда не читает то, что вы вводите сами.",
+  "keyboardTurnOn": "Включить",
+  "keyboardTurnOff": "Выключить",
+  "keyboardOpenSettings": "Открыть настройки клавиатуры",
+  "keyboardSwitch": "Сменить клавиатуру",
+  "keyboardStatusEnable": "Включите Linksy Keyboard в настройках клавиатуры Android.",
+  "keyboardStatusReady": "Готово. Когда компьютер попросит ввести текст, разрешите и выберите Linksy Keyboard.",
+  "keyboardStatusSwitch": "Компьютер хочет ввести текст. Переключитесь на Linksy Keyboard.",
+  "keyboardStatusActive": "Компьютер вводит текст через Linksy Keyboard. Смените клавиатуру, чтобы остановить.",
+  "sharingTypeRequestTitle": "{name} хочет вводить текст на этом телефоне",
+  "sharingTypeRequestDetail": "Текст вводится в открытое поле через Linksy Keyboard, пока вы не остановите его в уведомлении."
 }

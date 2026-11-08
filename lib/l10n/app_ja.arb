@@ -466,8 +466,6 @@
   "sharingControlRequestDetail": "停止するまで、{name} はこのスマートフォンの画面を見て、タップ、スワイプ、入力ができます。次に Android が確認を求めます。",
   "sharingCameraRequestTitle": "{name} があなたのカメラを使おうとしています",
   "sharingCameraRequestDetail": "停止するまで、{name} がこのスマートフォンのカメラをウェブカメラとして使います。使用中は Linksy でズーム、フォーカス、明るさ、レンズ、回転を調整できます。",
-  "sharingInputRequestTitle": "{name} がこのスマートフォンをタッチパッドとして使おうとしています",
-  "sharingInputRequestDetail": "想定外の要求です。コンピュータはこれを求めません。許可しないでください。",
   "sharingMicrophoneRequestTitle": "{name} があなたのマイクを使おうとしています",
   "sharingMicrophoneRequestDetail": "停止するまで、{name} はこのスマートフォンのマイクの音を、そのコンピュータのどのアプリでも使えるマイクとして受け取ります。次に Android が確認を求めます。",
   "sharingDisplayRequestTitle": "{name} がこの画面をセカンドディスプレイとして使おうとしています",
@@ -886,5 +884,17 @@
   "deckWidth": "幅",
   "deckHeight": "高さ",
   "deckStartFromPortrait": "縦向きのデッキから始める",
-  "deckStartEmpty": "空から始める"
+  "deckStartEmpty": "空から始める",
+  "keyboardCardTitle": "コンピュータから入力",
+  "keyboardCardWhy": "ペアリングしたコンピュータが、Linksy Keyboardを通じて、このスマートフォンで開いている入力欄に入力できるようにします。毎回確認があり、キーボードはあなた自身の入力を読み取りません。",
+  "keyboardTurnOn": "オンにする",
+  "keyboardTurnOff": "オフにする",
+  "keyboardOpenSettings": "キーボード設定を開く",
+  "keyboardSwitch": "キーボードを切り替え",
+  "keyboardStatusEnable": "Androidのキーボード設定でLinksy Keyboardをオンにしてください。",
+  "keyboardStatusReady": "準備完了。コンピュータが入力を求めたら許可し、Linksy Keyboardを選んでください。",
+  "keyboardStatusSwitch": "コンピュータが入力しようとしています。Linksy Keyboardに切り替えてください。",
+  "keyboardStatusActive": "コンピュータがLinksy Keyboardで入力しています。キーボードを切り替えると停止します。",
+  "sharingTypeRequestTitle": "{name}がこのスマートフォンに入力しようとしています",
+  "sharingTypeRequestDetail": "Linksy Keyboardを通じて開いている入力欄に入力します。通知から停止できます。"
 }

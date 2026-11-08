@@ -1696,15 +1696,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String sharingInputRequestTitle(String name) {
-    return '$name がこのスマートフォンをタッチパッドとして使おうとしています';
-  }
-
-  @override
-  String get sharingInputRequestDetail =>
-      '想定外の要求です。コンピュータはこれを求めません。許可しないでください。';
-
-  @override
   String sharingMicrophoneRequestTitle(String name) {
     return '$name があなたのマイクを使おうとしています';
   }
@@ -3203,4 +3194,48 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get deckStartEmpty => '空から始める';
+
+  @override
+  String get keyboardCardTitle => 'コンピュータから入力';
+
+  @override
+  String get keyboardCardWhy =>
+      'ペアリングしたコンピュータが、Linksy Keyboardを通じて、このスマートフォンで開いている入力欄に入力できるようにします。毎回確認があり、キーボードはあなた自身の入力を読み取りません。';
+
+  @override
+  String get keyboardTurnOn => 'オンにする';
+
+  @override
+  String get keyboardTurnOff => 'オフにする';
+
+  @override
+  String get keyboardOpenSettings => 'キーボード設定を開く';
+
+  @override
+  String get keyboardSwitch => 'キーボードを切り替え';
+
+  @override
+  String get keyboardStatusEnable =>
+      'Androidのキーボード設定でLinksy Keyboardをオンにしてください。';
+
+  @override
+  String get keyboardStatusReady =>
+      '準備完了。コンピュータが入力を求めたら許可し、Linksy Keyboardを選んでください。';
+
+  @override
+  String get keyboardStatusSwitch =>
+      'コンピュータが入力しようとしています。Linksy Keyboardに切り替えてください。';
+
+  @override
+  String get keyboardStatusActive =>
+      'コンピュータがLinksy Keyboardで入力しています。キーボードを切り替えると停止します。';
+
+  @override
+  String sharingTypeRequestTitle(String name) {
+    return '$nameがこのスマートフォンに入力しようとしています';
+  }
+
+  @override
+  String get sharingTypeRequestDetail =>
+      'Linksy Keyboardを通じて開いている入力欄に入力します。通知から停止できます。';
 }

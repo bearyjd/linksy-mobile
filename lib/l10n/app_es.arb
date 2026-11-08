@@ -466,8 +466,6 @@
   "sharingControlRequestDetail": "{name} ve la pantalla de este teléfono y puede tocar, deslizar y escribir en ella hasta que lo detengas. Después, Android te pedirá que lo confirmes.",
   "sharingCameraRequestTitle": "{name} quiere usar tu cámara",
   "sharingCameraRequestDetail": "{name} recibe la cámara de este teléfono como webcam hasta que lo detengas. El zoom, el enfoque, la luz, las lentes y la rotación están en Linksy mientras funciona.",
-  "sharingInputRequestTitle": "{name} quiere usar este teléfono como touchpad",
-  "sharingInputRequestDetail": "Inesperado: las computadoras no piden esto. No lo permitas.",
   "sharingMicrophoneRequestTitle": "{name} quiere usar tu micrófono",
   "sharingMicrophoneRequestDetail": "{name} oye el micrófono de este teléfono hasta que lo detengas, como un micrófono que cualquiera de sus apps puede usar. Después, Android te pedirá que lo confirmes.",
   "sharingDisplayRequestTitle": "{name} quiere usar esta pantalla como segunda pantalla",
@@ -886,5 +884,17 @@
   "deckWidth": "Ancho",
   "deckHeight": "Alto",
   "deckStartFromPortrait": "Empezar desde tu deck vertical",
-  "deckStartEmpty": "Empezar vacío"
+  "deckStartEmpty": "Empezar vacío",
+  "keyboardCardTitle": "Escribe desde tu computadora",
+  "keyboardCardWhy": "Permite que una computadora vinculada escriba en el campo abierto de este teléfono, a través de Linksy Keyboard. Te lo pregunta cada vez, y el teclado nunca lee lo que escribes tú.",
+  "keyboardTurnOn": "Activar",
+  "keyboardTurnOff": "Desactivar",
+  "keyboardOpenSettings": "Abrir ajustes del teclado",
+  "keyboardSwitch": "Cambiar de teclado",
+  "keyboardStatusEnable": "Activa Linksy Keyboard en los ajustes de teclado de Android.",
+  "keyboardStatusReady": "Listo. Cuando tu computadora pida escribir, permítelo y elige Linksy Keyboard.",
+  "keyboardStatusSwitch": "Tu computadora quiere escribir. Cambia a Linksy Keyboard.",
+  "keyboardStatusActive": "Tu computadora está escribiendo con Linksy Keyboard. Cambia de teclado para detenerlo.",
+  "sharingTypeRequestTitle": "{name} quiere escribir en este teléfono",
+  "sharingTypeRequestDetail": "Escribe en el campo abierto, a través de Linksy Keyboard, hasta que lo detengas desde la notificación."
 }

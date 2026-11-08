@@ -37,4 +37,13 @@
     <string name="copy_to_computer">Adikao any amin\'ny solosaina</string>
     <string name="snap_no_camera">Tsy misy app fakan-tsary amin\'ity finday ity</string>
     <string name="channel_from_computer">Avy amin\'ity solosaina ity</string>
+    <string name="channel_typing">Soratana avy amin\'ny solosainao</string>
+    <string name="typing_notice">Afaka manoratra amin\'ity finday ity i %1$s</string>
+    <string name="typing_stop">Atsaharo ny fanoratana</string>
+    <string name="keyboard_typing">Manoratra eto i %1$s</string>
+    <string name="keyboard_idle">Tsy misy solosaina manoratra izao</string>
+    <string name="keyboard_switch">Ovay ny fitendry</string>
+    <string name="keyboard_paused_password">Najanona: efitra tenimiafina</string>
+    <string name="keyboard_unsupported">Tsy afaka manoratra amin\'ity efitra ity ny solosaina</string>
+    <string name="keyboard_hint">Tsy misy fanalahidy ny Linksy Keyboard. Mifidiana fitendry hafa raha hanoratra amin\'ny findainao.</string>
 </resources>

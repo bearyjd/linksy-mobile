@@ -1745,15 +1745,6 @@ class AppLocalizationsMg extends AppLocalizations {
   }
 
   @override
-  String sharingInputRequestTitle(String name) {
-    return 'Te hampiasa ity finday ity ho touchpad $name';
-  }
-
-  @override
-  String get sharingInputRequestDetail =>
-      'Tsy nampoizina: tsy mangataka izany ny solosaina. Aza avela.';
-
-  @override
   String sharingMicrophoneRequestTitle(String name) {
     return 'Te hampiasa ny mikrônao $name';
   }
@@ -3301,4 +3292,48 @@ class AppLocalizationsMg extends AppLocalizations {
 
   @override
   String get deckStartEmpty => 'Manomboka banga';
+
+  @override
+  String get keyboardCardTitle => 'Soratana avy amin\'ny solosainao';
+
+  @override
+  String get keyboardCardWhy =>
+      'Avelao ny solosaina mifandray hanoratra ao amin\'ny boaty misokatra amin\'ity finday ity, amin\'ny alalan\'i Linksy Keyboard. Manontany anao isaky ny mitranga izy, ary tsy mamaky mihitsy ny fitendry izay soratanao ianao.';
+
+  @override
+  String get keyboardTurnOn => 'Alefaso';
+
+  @override
+  String get keyboardTurnOff => 'Vonoy';
+
+  @override
+  String get keyboardOpenSettings => 'Sokafy ny fanamboarana fitendry';
+
+  @override
+  String get keyboardSwitch => 'Ovay ny fitendry';
+
+  @override
+  String get keyboardStatusEnable =>
+      'Alefaso i Linksy Keyboard ao amin\'ny fanamboarana fitendry an\'i Android.';
+
+  @override
+  String get keyboardStatusReady =>
+      'Vonona. Rehefa mangataka hanoratra ny solosainao, avelao ary fidio i Linksy Keyboard.';
+
+  @override
+  String get keyboardStatusSwitch =>
+      'Te hanoratra ny solosainao. Mifindra any amin\'i Linksy Keyboard.';
+
+  @override
+  String get keyboardStatusActive =>
+      'Manoratra amin\'ny alalan\'i Linksy Keyboard ny solosainao. Ovay ny fitendry raha hampitsahatra.';
+
+  @override
+  String sharingTypeRequestTitle(String name) {
+    return 'Te hanoratra amin\'ity finday ity $name';
+  }
+
+  @override
+  String get sharingTypeRequestDetail =>
+      'Manoratra ao amin\'ny boaty misokatra izy amin\'ny alalan\'i Linksy Keyboard mandra-pampitsahatrinao azy amin\'ny fampandrenesana.';
 }

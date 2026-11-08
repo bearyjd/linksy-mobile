@@ -2339,19 +2339,6 @@
       }
     }
   },
-  "sharingInputRequestTitle": "{name} wants to use this phone as a touchpad",
-  "@sharingInputRequestTitle": {
-    "description": "Request dialog title; name is a computer",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "sharingInputRequestDetail": "Unexpected: computers don’t ask this. Don’t allow it.",
-  "@sharingInputRequestDetail": {
-    "description": "Touchpad request warning"
-  },
   "sharingMicrophoneRequestTitle": "{name} wants to use your microphone",
   "@sharingMicrophoneRequestTitle": {
     "description": "Request dialog title; name is a computer",
@@ -4234,5 +4221,29 @@
   "deckStartFromPortrait": "Start from your portrait deck",
   "@deckStartFromPortrait": {"description":"The deck editor."},
   "deckStartEmpty": "Start empty",
-  "@deckStartEmpty": {"description":"The deck editor."}
+  "@deckStartEmpty": {"description":"The deck editor."},
+  "keyboardCardTitle": "Type from your computer",
+  "@keyboardCardTitle": {"description":"Linksy Keyboard: typing on this phone from a computer."},
+  "keyboardCardWhy": "Lets a paired computer type into the box you have open on this phone, through Linksy Keyboard. It asks you every time, and the keyboard never reads what you type yourself.",
+  "@keyboardCardWhy": {"description":"Linksy Keyboard: typing on this phone from a computer."},
+  "keyboardTurnOn": "Turn on",
+  "@keyboardTurnOn": {"description":"Linksy Keyboard: typing on this phone from a computer."},
+  "keyboardTurnOff": "Turn off",
+  "@keyboardTurnOff": {"description":"Linksy Keyboard: typing on this phone from a computer."},
+  "keyboardOpenSettings": "Open keyboard settings",
+  "@keyboardOpenSettings": {"description":"Linksy Keyboard: typing on this phone from a computer."},
+  "keyboardSwitch": "Switch keyboard",
+  "@keyboardSwitch": {"description":"Linksy Keyboard: typing on this phone from a computer."},
+  "keyboardStatusEnable": "Turn on Linksy Keyboard in Android’s keyboard settings.",
+  "@keyboardStatusEnable": {"description":"Linksy Keyboard: typing on this phone from a computer."},
+  "keyboardStatusReady": "Ready. When your computer asks to type, allow it and pick Linksy Keyboard.",
+  "@keyboardStatusReady": {"description":"Linksy Keyboard: typing on this phone from a computer."},
+  "keyboardStatusSwitch": "Your computer wants to type. Switch to Linksy Keyboard.",
+  "@keyboardStatusSwitch": {"description":"Linksy Keyboard: typing on this phone from a computer."},
+  "keyboardStatusActive": "Your computer is typing through Linksy Keyboard. Switch keyboards to stop.",
+  "@keyboardStatusActive": {"description":"Linksy Keyboard: typing on this phone from a computer."},
+  "sharingTypeRequestTitle": "{name} wants to type on this phone",
+  "@sharingTypeRequestTitle": {"description":"Request dialog title when a computer asks to type on this phone; name is a computer","placeholders":{"name":{"type":"String"}}},
+  "sharingTypeRequestDetail": "It types into the box you have open, through Linksy Keyboard, until you stop it from the notification.",
+  "@sharingTypeRequestDetail": {"description":"Linksy Keyboard: typing on this phone from a computer."}
 }

@@ -1744,15 +1744,6 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String sharingInputRequestTitle(String name) {
-    return '$name quiere usar este teléfono como touchpad';
-  }
-
-  @override
-  String get sharingInputRequestDetail =>
-      'Inesperado: las computadoras no piden esto. No lo permitas.';
-
-  @override
   String sharingMicrophoneRequestTitle(String name) {
     return '$name quiere usar tu micrófono';
   }
@@ -3294,4 +3285,48 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get deckStartEmpty => 'Empezar vacío';
+
+  @override
+  String get keyboardCardTitle => 'Escribe desde tu computadora';
+
+  @override
+  String get keyboardCardWhy =>
+      'Permite que una computadora vinculada escriba en el campo abierto de este teléfono, a través de Linksy Keyboard. Te lo pregunta cada vez, y el teclado nunca lee lo que escribes tú.';
+
+  @override
+  String get keyboardTurnOn => 'Activar';
+
+  @override
+  String get keyboardTurnOff => 'Desactivar';
+
+  @override
+  String get keyboardOpenSettings => 'Abrir ajustes del teclado';
+
+  @override
+  String get keyboardSwitch => 'Cambiar de teclado';
+
+  @override
+  String get keyboardStatusEnable =>
+      'Activa Linksy Keyboard en los ajustes de teclado de Android.';
+
+  @override
+  String get keyboardStatusReady =>
+      'Listo. Cuando tu computadora pida escribir, permítelo y elige Linksy Keyboard.';
+
+  @override
+  String get keyboardStatusSwitch =>
+      'Tu computadora quiere escribir. Cambia a Linksy Keyboard.';
+
+  @override
+  String get keyboardStatusActive =>
+      'Tu computadora está escribiendo con Linksy Keyboard. Cambia de teclado para detenerlo.';
+
+  @override
+  String sharingTypeRequestTitle(String name) {
+    return '$name quiere escribir en este teléfono';
+  }
+
+  @override
+  String get sharingTypeRequestDetail =>
+      'Escribe en el campo abierto, a través de Linksy Keyboard, hasta que lo detengas desde la notificación.';
 }

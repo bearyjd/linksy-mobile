@@ -2913,18 +2913,6 @@ abstract class AppLocalizations {
   /// Request dialog title; name is a computer
   ///
   /// In en, this message translates to:
-  /// **'{name} wants to use this phone as a touchpad'**
-  String sharingInputRequestTitle(String name);
-
-  /// Touchpad request warning
-  ///
-  /// In en, this message translates to:
-  /// **'Unexpected: computers don’t ask this. Don’t allow it.'**
-  String get sharingInputRequestDetail;
-
-  /// Request dialog title; name is a computer
-  ///
-  /// In en, this message translates to:
   /// **'{name} wants to use your microphone'**
   String sharingMicrophoneRequestTitle(String name);
 
@@ -5435,6 +5423,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Start empty'**
   String get deckStartEmpty;
+
+  /// Linksy Keyboard: typing on this phone from a computer.
+  ///
+  /// In en, this message translates to:
+  /// **'Type from your computer'**
+  String get keyboardCardTitle;
+
+  /// Linksy Keyboard: typing on this phone from a computer.
+  ///
+  /// In en, this message translates to:
+  /// **'Lets a paired computer type into the box you have open on this phone, through Linksy Keyboard. It asks you every time, and the keyboard never reads what you type yourself.'**
+  String get keyboardCardWhy;
+
+  /// Linksy Keyboard: typing on this phone from a computer.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on'**
+  String get keyboardTurnOn;
+
+  /// Linksy Keyboard: typing on this phone from a computer.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off'**
+  String get keyboardTurnOff;
+
+  /// Linksy Keyboard: typing on this phone from a computer.
+  ///
+  /// In en, this message translates to:
+  /// **'Open keyboard settings'**
+  String get keyboardOpenSettings;
+
+  /// Linksy Keyboard: typing on this phone from a computer.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch keyboard'**
+  String get keyboardSwitch;
+
+  /// Linksy Keyboard: typing on this phone from a computer.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on Linksy Keyboard in Android’s keyboard settings.'**
+  String get keyboardStatusEnable;
+
+  /// Linksy Keyboard: typing on this phone from a computer.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready. When your computer asks to type, allow it and pick Linksy Keyboard.'**
+  String get keyboardStatusReady;
+
+  /// Linksy Keyboard: typing on this phone from a computer.
+  ///
+  /// In en, this message translates to:
+  /// **'Your computer wants to type. Switch to Linksy Keyboard.'**
+  String get keyboardStatusSwitch;
+
+  /// Linksy Keyboard: typing on this phone from a computer.
+  ///
+  /// In en, this message translates to:
+  /// **'Your computer is typing through Linksy Keyboard. Switch keyboards to stop.'**
+  String get keyboardStatusActive;
+
+  /// Request dialog title when a computer asks to type on this phone; name is a computer
+  ///
+  /// In en, this message translates to:
+  /// **'{name} wants to type on this phone'**
+  String sharingTypeRequestTitle(String name);
+
+  /// Linksy Keyboard: typing on this phone from a computer.
+  ///
+  /// In en, this message translates to:
+  /// **'It types into the box you have open, through Linksy Keyboard, until you stop it from the notification.'**
+  String get sharingTypeRequestDetail;
 }
 
 class _AppLocalizationsDelegate

@@ -37,4 +37,14 @@
     <string name="copy_to_computer">Copy to Computer</string>
     <string name="snap_no_camera">No camera app on this phone</string>
     <string name="channel_from_computer">From this computer</string>
+    <string name="keyboard_name">Linksy Keyboard</string>
+    <string name="channel_typing">Typing from your computer</string>
+    <string name="typing_notice">%1$s can type on this phone</string>
+    <string name="typing_stop">Stop typing</string>
+    <string name="keyboard_typing">%1$s is typing here</string>
+    <string name="keyboard_idle">No computer is typing now</string>
+    <string name="keyboard_switch">Switch keyboard</string>
+    <string name="keyboard_paused_password">Paused: password field</string>
+    <string name="keyboard_unsupported">This field can\'t receive typing from the computer</string>
+    <string name="keyboard_hint">Linksy Keyboard has no keys. Switch to another keyboard to type on the phone.</string>
 </resources>

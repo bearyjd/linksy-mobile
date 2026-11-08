@@ -37,4 +37,13 @@
     <string name="copy_to_computer">复制到电脑</string>
     <string name="snap_no_camera">这台手机没有相机应用</string>
     <string name="channel_from_computer">来自这台电脑</string>
+    <string name="channel_typing">从电脑输入</string>
+    <string name="typing_notice">%1$s可以在这部手机上输入</string>
+    <string name="typing_stop">停止输入</string>
+    <string name="keyboard_typing">%1$s正在此处输入</string>
+    <string name="keyboard_idle">目前没有电脑在输入</string>
+    <string name="keyboard_switch">切换键盘</string>
+    <string name="keyboard_paused_password">已暂停：密码输入框</string>
+    <string name="keyboard_unsupported">电脑无法向此输入框输入文字</string>
+    <string name="keyboard_hint">Linksy Keyboard 没有按键。请切换到其他键盘以在手机上输入。</string>
 </resources>

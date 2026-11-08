@@ -4,6 +4,7 @@ import '../../app/platform.dart';
 import '../../ui/components.dart';
 import '../../ui/l10n.dart';
 import '../../ui/sig.dart';
+import 'keyboard_card.dart';
 
 /// What Linksy asks Android for, why, and a button that brings up Android's
 /// own dialog (or, for remote control, its settings page). Re-reads when the
@@ -89,6 +90,8 @@ class _PermissionsSheetState extends State<_PermissionsSheet>
               action: context.l10n.permissionsAllow,
               onTap: () => _request('camera'),
             ),
+            const SizedBox(height: 10),
+            const KeyboardCard(),
             const SizedBox(height: 20),
             SigButton(
               label: context.l10n.permissionsDone,
