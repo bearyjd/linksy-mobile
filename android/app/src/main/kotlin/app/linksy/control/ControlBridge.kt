@@ -14,6 +14,7 @@ import android.os.RemoteException
 import android.os.SystemClock
 import app.linksy.Logs
 import app.linksy.media.NativeSession
+import java.util.concurrent.atomic.AtomicBoolean
 
 /// A control session's path to the companion: reads the computer's input
 /// frames from the session (rust/src/sessions.rs, framed JSON), checks them
@@ -25,51 +26,68 @@ class ControlBridge(
     private val context: Context,
     private val session: String,
     private val enabled: Boolean,
-    private val onActive: (Boolean) -> Unit,
+    private val onStatus: (BridgeStatus) -> Unit,
 ) {
     private val thread = HandlerThread("linksy-control").apply { start() }
     private val handler = Handler(thread.looper)
     private var service: Messenger? = null
-    private var bound = false
+    private var connection: ServiceConnection? = null
+    private var generation = 0
+    private val stopped = AtomicBoolean(false)
 
     private val reply = Messenger(Handler(thread.looper) { msg ->
         if (msg.what == REPLY_BEGIN) client.onReply(msg.arg1)
         true
     })
 
-    private val connection = object : ServiceConnection {
+    /// One per bind: what an older connection says after a rebind is ignored.
+    private fun connectionFor(gen: Int) = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName, binder: IBinder) {
-            handler.post { service = Messenger(binder); client.onBound() }
+            handler.post { if (gen == generation) { service = Messenger(binder); client.onBound() } }
         }
 
         override fun onServiceDisconnected(name: ComponentName) {
-            handler.post { service = null; client.onLost() }
+            handler.post { if (gen == generation) { service = null; client.onLost() } }
         }
 
         override fun onBindingDied(name: ComponentName) {
-            handler.post { service = null; client.onLost() }
+            handler.post { if (gen == generation) { service = null; client.onLost() } }
         }
 
         override fun onNullBinding(name: ComponentName) {
-            handler.post { client.onBindFailed() }
+            handler.post { if (gen == generation) client.onBindFailed() }
         }
     }
 
     private val link = object : BridgeLink {
         override fun bind() {
+            val gen = ++generation
+            // Checked before every bind: a companion that was replaced since
+            // it was last trusted must not get the session.
+            if (!ControlCompanion.trusted(context)) {
+                handler.post { if (gen == generation) client.onUntrusted() }
+                return
+            }
             val intent = Intent(ControlCompanion.BIND_ACTION).setComponent(ControlCompanion.service())
-            bound = try {
-                context.bindService(intent, connection, Context.BIND_AUTO_CREATE)
+            val conn = connectionFor(gen)
+            val ok = try {
+                context.bindService(intent, conn, Context.BIND_AUTO_CREATE)
             } catch (_: SecurityException) {
                 false
             }
-            if (!bound) handler.post { client.onBindFailed() }
+            if (ok) {
+                connection = conn
+            } else {
+                runCatching { context.unbindService(conn) }
+                handler.post { if (gen == generation) client.onBindFailed() }
+            }
         }
 
         override fun unbind() {
+            generation++
             service = null
-            runCatching { context.unbindService(connection) }
-            bound = false
+            connection?.let { runCatching { context.unbindService(it) } }
+            connection = null
         }
 
         override fun begin() = post(Message.obtain(null, MSG_BEGIN).also { it.replyTo = reply })
@@ -93,9 +111,10 @@ class ControlBridge(
         object : BridgeListener {
             override fun onStatus(status: BridgeStatus, reason: FailReason?) {
                 Logs.add("Control: $status${reason?.let { " ($it)" } ?: ""}")
-                // Not approved there (any more): don't offer control again.
-                if (reason == FailReason.NotPaired) ControlCompanion.setPaired(context, false)
-                onActive(status == BridgeStatus.Active)
+                // Not approved there (any more), or refused for good: don't
+                // offer control again until it is paired again.
+                if (reason == FailReason.NotPaired || reason == FailReason.Setup) ControlCompanion.setPaired(context, false)
+                onStatus(status)
             }
         },
     )
@@ -105,8 +124,9 @@ class ControlBridge(
         Thread({ read() }, "linksy-control-read").start()
     }
 
-    /// Releases what is held, ENDs and unbinds, in that order.
+    /// Releases what is held, ENDs and unbinds, in that order. Harmless twice.
     fun stop() {
+        if (!stopped.compareAndSet(false, true)) return
         handler.post {
             client.stop()
             thread.quitSafely()
@@ -114,28 +134,14 @@ class ControlBridge(
     }
 
     private fun read() {
-        val frames = FrameDecoder()
-        var gotSome = false
-        var tries = 0
-        while (true) {
-            val bytes = NativeSession.read(session)
-            if (bytes == null) {
-                // The Rust side registers the session a moment after the app hears of it.
-                if (!gotSome && tries++ < REGISTER_TRIES) {
-                    Thread.sleep(REGISTER_WAIT_MS)
-                    continue
-                }
-                break
-            }
-            gotSome = true
-            for (json in frames.feed(bytes)) {
-                ControlMsg.parse(json)?.let { msg -> if (enabled) handler.post { client.send(msg) } }
-            }
-            if (frames.broken && enabled) {
-                Logs.add("Control: stopped, a frame was too large")
-                handler.post { client.stop() }
-            }
-        }
+        ControlReader(
+            read = { NativeSession.read(session) },
+            pause = { Thread.sleep(it) },
+            enabled = enabled,
+            onMsg = { msg -> handler.post { client.send(msg) } },
+            onBroken = { handler.post { client.stop() } },
+            log = { Logs.add(it) },
+        ).run()
         stop()
     }
 
@@ -145,7 +151,5 @@ class ControlBridge(
         const val MSG_INJECT = 3
         const val REPLY_BEGIN = 100
         const val KEY_JSON = "json"
-        const val REGISTER_TRIES = 20
-        const val REGISTER_WAIT_MS = 100L
     }
 }

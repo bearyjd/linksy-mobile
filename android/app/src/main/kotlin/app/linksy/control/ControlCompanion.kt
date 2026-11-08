@@ -5,7 +5,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.provider.Settings
+import app.linksy.BuildConfig
+import app.linksy.media.ShareService
+import java.security.MessageDigest
 
 /// The companion app (app.linksy.mg.control, github.com/bearyjd/linksy-control)
 /// as this phone sees it. Reading its state needs only a `<queries>` entry,
@@ -17,13 +21,33 @@ object ControlCompanion {
 
     private fun prefs(context: Context) = context.getSharedPreferences("linksy", Context.MODE_PRIVATE)
 
-    fun installed(context: Context): Boolean = try {
-        @Suppress("DEPRECATION")
-        context.packageManager.getPackageInfo(CompanionPolicy.PACKAGE, 0)
-        true
-    } catch (_: PackageManager.NameNotFoundException) {
-        false
+    /// This build knows whose companion to trust (a pin was given at build
+    /// time) and this Android can tell who signed it.
+    fun configured(): Boolean =
+        CompanionTrust.configured(BuildConfig.COMPANION_CERT_SHA256) && CompanionTrust.supported(Build.VERSION.SDK_INT)
+
+    /// SHA-256 of each certificate the installed companion is signed with now
+    /// (not the history of keys it was once signed with); empty if it is absent.
+    private fun signers(context: Context): List<String> {
+        if (Build.VERSION.SDK_INT < CompanionTrust.MIN_SDK) return emptyList()
+        return try {
+            val info = context.packageManager.getPackageInfo(CompanionPolicy.PACKAGE, PackageManager.GET_SIGNING_CERTIFICATES)
+            val digest = MessageDigest.getInstance("SHA-256")
+            info.signingInfo?.apkContentsSigners.orEmpty().map { sig ->
+                digest.digest(sig.toByteArray()).joinToString("") { "%02x".format(it) }
+            }
+        } catch (_: PackageManager.NameNotFoundException) {
+            emptyList()
+        }
     }
+
+    /// The companion is there and signed with the pinned certificate. Checked
+    /// every time it matters (pairing, binding), never remembered.
+    fun trusted(context: Context): Boolean =
+        configured() && CompanionTrust.trusted(BuildConfig.COMPANION_CERT_SHA256, signers(context))
+
+    /// Installed and trusted: anything else is treated as not installed.
+    fun installed(context: Context): Boolean = trusted(context)
 
     fun accessibilityOn(context: Context): Boolean = CompanionPolicy.accessibilityOn(
         Settings.Secure.getString(context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES),
@@ -47,7 +71,9 @@ object ControlCompanion {
     fun mayControl(context: Context): Boolean = CompanionPolicy.advertises(status(context), userOn(context))
 
     fun state(context: Context): Map<String, Boolean> = mapOf(
+        "configured" to configured(),
         "installed" to installed(context),
+        "bridged" to ShareService.controlActive,
         "accessibility" to accessibilityOn(context),
         "paired" to paired(context),
     )

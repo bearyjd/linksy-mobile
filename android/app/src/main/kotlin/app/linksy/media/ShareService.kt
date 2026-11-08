@@ -5,8 +5,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.hardware.input.InputManager
 import android.media.projection.MediaProjectionManager
@@ -21,6 +23,7 @@ import app.linksy.MainActivity
 import app.linksy.Lang
 import app.linksy.Logs
 import app.linksy.R
+import app.linksy.control.BridgeStatus
 import app.linksy.control.ControlBridge
 import app.linksy.control.ControlCompanion
 
@@ -116,6 +119,7 @@ class ShareService : Service() {
     private fun stop(session: String) {
         bridges.remove(session)?.stop()
         bridged.remove(session)
+        bridgeChanged()
         webcams.remove(session)
         active.remove(session)
         kinds.remove(session)
@@ -134,6 +138,7 @@ class ShareService : Service() {
 
     override fun onDestroy() {
         shares.keys.toList().forEach(::stop)
+        controlActive = false
         super.onDestroy()
     }
 
@@ -202,19 +207,49 @@ class ShareService : Service() {
 
     private fun startBridge(session: String) {
         val main = Handler(Looper.getMainLooper())
-        val bridge = ControlBridge(this, session, ControlCompanion.mayControl(this)) { active ->
+        val bridge = ControlBridge(this, session, ControlCompanion.mayControl(this)) { status ->
             main.post {
                 if (!bridges.containsKey(session)) return@post
-                if (active) bridged.add(session) else bridged.remove(session)
+                if (status == BridgeStatus.Active) bridged.add(session) else bridged.remove(session)
+                bridgeChanged()
                 checkControl()
             }
         }
         bridges[session] = bridge
+        if (!watchingScreen) {
+            watchingScreen = true
+            registerReceiver(screenOff, IntentFilter(Intent.ACTION_SCREEN_OFF))
+        }
         bridge.start()
     }
 
+    /// Tells the app (Dart) the bridge went up or down or failed, so what the
+    /// Permissions card shows and what the phone announces follow it.
+    private fun bridgeChanged() {
+        controlActive = bridged.isNotEmpty()
+        controlListener?.invoke()
+        if (bridges.isEmpty() && watchingScreen) {
+            watchingScreen = false
+            runCatching { unregisterReceiver(screenOff) }
+        }
+    }
+
+    // With the screen off nobody is looking at what a computer does here, so
+    // control sessions end, as the typing path does.
+    private var watchingScreen = false
+    private val screenOff = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val ending = bridges.keys.toList()
+            if (ending.isNotEmpty()) Logs.add("Control: ended, the screen turned off")
+            ending.forEach(::stop)
+        }
+    }
+
     private fun checkControl() {
-        val screen = kinds.entries.firstOrNull { it.value == "screen" || it.value == "control" }?.key
+        // A control session the bridge is driving is the one being controlled,
+        // even if a plain screen share is listed before it.
+        val screen = bridged.firstOrNull { kinds[it] == "control" }
+            ?: kinds.entries.firstOrNull { it.value == "screen" || it.value == "control" }?.key
         val now = screen != null && (touchFromOutside() || bridged.contains(screen))
         if (now == controlled) return
         controlled = now
@@ -299,6 +334,12 @@ class ShareService : Service() {
         val webcams = java.util.concurrent.ConcurrentHashMap<String, CameraShare>()
 
         /// Hears every webcam change (session, state), while the app shows them.
+        /// Whether a control session is being driven through the companion now.
+        @Volatile var controlActive = false
+
+        /// Hears the control bridge change (up, down, failed), while the app shows them.
+        @Volatile var controlListener: (() -> Unit)? = null
+
         @Volatile var webcamListener: ((String, org.json.JSONObject) -> Unit)? = null
 
         fun start(context: Context, session: String, kind: String, peer: String, peerId: String) {

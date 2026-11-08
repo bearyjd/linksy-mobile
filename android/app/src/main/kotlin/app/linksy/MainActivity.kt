@@ -80,6 +80,7 @@ class MainActivity : FlutterActivity() {
         PhoneNotifications.removed = { key, kept ->
             runOnUiThread { channel?.invokeMethod("phoneNotificationGone", mapOf("key" to key, "kept" to kept)) }
         }
+        ShareService.controlListener = { runOnUiThread { channel?.invokeMethod("controlChanged", null) } }
         ShareService.webcamListener = { session, state ->
             runOnUiThread { channel?.invokeMethod("webcamChanged", mapOf("session" to session, "state" to state.toString())) }
         }
@@ -631,6 +632,11 @@ class MainActivity : FlutterActivity() {
                         result.success(null)
                     }
                     "pairCompanion" -> {
+                        // Only the companion this build trusts is offered a pairing.
+                        if (!ControlCompanion.trusted(this@MainActivity)) {
+                            result.success(false)
+                            return@setMethodCallHandler
+                        }
                         pendingPair?.success(false)
                         pendingPair = result
                         try {
@@ -1130,6 +1136,7 @@ class MainActivity : FlutterActivity() {
         PhoneNotifications.removed = null
         DirectHost.step = null
         ShareService.webcamListener = null
+        ShareService.controlListener = null
         previews.keys.toList().forEach { webcamPreview(it, false) }
         batteryReceiver?.let { runCatching { unregisterReceiver(it) } }
         batteryReceiver = null
@@ -1338,8 +1345,11 @@ class MainActivity : FlutterActivity() {
         @Suppress("DEPRECATION")
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_PAIR) {
-            val paired = resultCode == RESULT_OK
-            ControlCompanion.setPaired(this, paired)
+            // Only an approval counts, and only from the trusted companion as it
+            // is now. A cancelled screen proves nothing about an earlier approval:
+            // that is undone only by the companion saying "not approved" (BEGIN reply 4).
+            val paired = resultCode == RESULT_OK && ControlCompanion.trusted(this)
+            if (paired) ControlCompanion.setPaired(this, true)
             pendingPair?.success(paired)
             pendingPair = null
             return

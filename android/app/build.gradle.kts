@@ -13,6 +13,15 @@ val keyPropsFile = rootProject.file("key.properties")
 val hasReleaseKey = keyPropsFile.exists()
 if (hasReleaseKey) keyPropsFile.inputStream().use { keyProps.load(it) }
 
+// The Linksy Control companion's signing certificate (SHA-256, 64 hex digits):
+// `-PcompanionCertSha256=<hex>`. Empty by default, and then this build never
+// trusts a companion, so `control` is never announced. Checked here so nothing
+// but hex can reach BuildConfig.
+val companionCertSha256 = (findProperty("companionCertSha256") as String?).orEmpty().trim()
+require(companionCertSha256.isEmpty() || Regex("[0-9A-Fa-f]{64}").matches(companionCertSha256)) {
+    "companionCertSha256 must be 64 hex digits (SHA-256 of the companion's signing certificate)"
+}
+
 android {
     namespace = "app.linksy"
     compileSdk = flutter.compileSdkVersion
@@ -23,7 +32,12 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
+        buildConfigField("String", "COMPANION_CERT_SHA256", "\"${companionCertSha256.lowercase()}\"")
         applicationId = "app.linksy.mg"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
