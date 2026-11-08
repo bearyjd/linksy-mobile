@@ -42,7 +42,15 @@ pub(crate) fn collect(node: &Node) {
     let Some(mut accepted) = node.incoming_sessions() else { return };
     rt().spawn(async move {
         while let Some(session) = accepted.recv().await {
-            run(session);
+            // Only a computer typing on this phone comes in as `input`; core
+            // refuses it unless the keyboard is on.
+            if session.kind == SessionKind::Input {
+                if let Some(typing) = session.keyboard_input() {
+                    run_typing(typing);
+                }
+            } else {
+                run(session);
+            }
         }
     });
 }
@@ -114,8 +122,32 @@ pub(crate) fn run(mut session: Session) {
 
 /// Registers a session the phone only reads (typing): no way to write to it.
 /// The returned sender feeds [`read`]; the notify is woken by [`end`].
-fn add_incoming(_id: &str, _peer: linksy_core::Fingerprint) -> (mpsc::Sender<Vec<u8>>, Arc<Notify>) {
-    todo!()
+fn add_incoming(id: &str, peer: linksy_core::Fingerprint) -> (mpsc::Sender<Vec<u8>>, Arc<Notify>) {
+    let (arrived, incoming) = mpsc::channel::<Vec<u8>>(256);
+    let closed = Arc::new(Notify::new());
+    sessions().lock().unwrap().insert(
+        id.to_string(),
+        Arc::new(Handle {
+            peer,
+            out: Mutex::new(None),
+            incoming: Mutex::new(Some(incoming)),
+            closed: closed.clone(),
+        }),
+    );
+    (arrived, closed)
+}
+
+/// An accepted `input` session on this phone: a computer typing (§4.26). Held
+/// until the typing ends, the user stops it or the keyboard is turned off.
+fn run_typing(mut typing: linksy_core::keyboard::KeyboardInput) {
+    let id = typing.id.to_string();
+    let (tx, closed) = add_incoming(&id, typing.peer.id);
+    rt().spawn(async move {
+        crate::keyboard::forward(&mut typing, tx, closed).await;
+        sessions().lock().unwrap().remove(&id);
+        // Dropping it ends the session; core then reports `SessionEnded`.
+        drop(typing);
+    });
 }
 
 fn handle(id: &str) -> Option<Arc<Handle>> {

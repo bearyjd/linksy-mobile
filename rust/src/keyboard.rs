@@ -11,18 +11,46 @@ use tokio::sync::{Notify, mpsc};
 
 /// `T` + the text (UTF-8), or `K` + 1 (pressed) / 0 + the keysym (big-endian
 /// u32). Kotlin's `TypingEvent.decode` reads the same.
-pub(crate) fn encode(_input: &KeyInput) -> Vec<u8> {
-    todo!()
+pub(crate) fn encode(input: &KeyInput) -> Vec<u8> {
+    match input {
+        KeyInput::Text(text) => [&b"T"[..], text.as_bytes()].concat(),
+        KeyInput::Key { keysym, pressed } => {
+            let mut bytes = vec![b'K', u8::from(*pressed)];
+            bytes.extend_from_slice(&keysym.to_be_bytes());
+            bytes
+        }
+    }
 }
 
-/// Passes what `next` yields on to `tx`, encoded, until the source ends, the
+/// Where typed input comes from: core's `KeyboardInput`, or a script in tests.
+pub(crate) trait Source {
+    fn next(&mut self) -> impl Future<Output = Option<KeyInput>> + Send;
+}
+
+impl Source for linksy_core::keyboard::KeyboardInput {
+    fn next(&mut self) -> impl Future<Output = Option<KeyInput>> + Send {
+        linksy_core::keyboard::KeyboardInput::next(self)
+    }
+}
+
+/// Passes what `source` yields on to `tx`, encoded, until the source ends, the
 /// reader is gone or `closed` is notified. Never logs what was typed.
-pub(crate) async fn forward<F, Fut>(_next: F, _tx: mpsc::Sender<Vec<u8>>, _closed: Arc<Notify>)
-where
-    F: FnMut() -> Fut,
-    Fut: Future<Output = Option<KeyInput>>,
-{
-    todo!()
+pub(crate) async fn forward(source: &mut impl Source, tx: mpsc::Sender<Vec<u8>>, closed: Arc<Notify>) {
+    loop {
+        let input = tokio::select! {
+            biased;
+            _ = closed.notified() => break,
+            input = source.next() => match input {
+                Some(input) => input,
+                None => break,
+            },
+        };
+        tokio::select! {
+            biased;
+            _ = closed.notified() => break,
+            sent = tx.send(encode(&input)) => if sent.is_err() { break },
+        }
+    }
 }
 
 #[cfg(test)]
@@ -30,9 +58,25 @@ mod tests {
     use super::*;
     use std::collections::VecDeque;
 
-    fn scripted(items: Vec<KeyInput>) -> impl FnMut() -> std::future::Ready<Option<KeyInput>> {
-        let mut items: VecDeque<KeyInput> = items.into();
-        move || std::future::ready(items.pop_front())
+    /// Yields `items` in order, then ends; `endless` never ends.
+    struct Script {
+        items: VecDeque<KeyInput>,
+        endless: bool,
+    }
+
+    impl Source for Script {
+        fn next(&mut self) -> impl Future<Output = Option<KeyInput>> + Send {
+            let next = if self.endless { Some(KeyInput::Text("x".into())) } else { self.items.pop_front() };
+            std::future::ready(next)
+        }
+    }
+
+    fn scripted(items: Vec<KeyInput>) -> Script {
+        Script { items: items.into(), endless: false }
+    }
+
+    fn endless() -> Script {
+        Script { items: VecDeque::new(), endless: true }
     }
 
     #[test]
@@ -54,7 +98,7 @@ mod tests {
             KeyInput::Key { keysym: 0xFF08, pressed: true },
             KeyInput::Key { keysym: 0xFF08, pressed: false },
         ];
-        forward(scripted(input.clone()), tx, Arc::new(Notify::new())).await;
+        forward(&mut scripted(input.clone()), tx, Arc::new(Notify::new())).await;
         let mut got = Vec::new();
         while let Some(bytes) = rx.recv().await {
             got.push(bytes);
@@ -68,8 +112,7 @@ mod tests {
         let closed = Arc::new(Notify::new());
         // `notify_one` keeps its permit until a waiter takes it.
         closed.notify_one();
-        let endless = || std::future::ready(Some(KeyInput::Text("x".into())));
-        tokio::time::timeout(std::time::Duration::from_secs(2), forward(endless, tx, closed))
+        tokio::time::timeout(std::time::Duration::from_secs(2), forward(&mut endless(), tx, closed))
             .await
             .expect("forward must return when closed");
         assert!(rx.recv().await.is_none() || rx.try_recv().is_err());
@@ -79,8 +122,7 @@ mod tests {
     async fn stops_when_the_reader_is_gone() {
         let (tx, rx) = mpsc::channel(1);
         drop(rx);
-        let endless = || std::future::ready(Some(KeyInput::Text("x".into())));
-        tokio::time::timeout(std::time::Duration::from_secs(2), forward(endless, tx, Arc::new(Notify::new())))
+        tokio::time::timeout(std::time::Duration::from_secs(2), forward(&mut endless(), tx, Arc::new(Notify::new())))
             .await
             .expect("forward must return when nobody reads");
     }
