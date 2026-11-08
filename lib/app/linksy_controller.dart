@@ -402,6 +402,17 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
+  // Control from your computer (the companion app).
+  bool get controlOn => false;
+  ({bool installed, bool accessibility, bool paired}) companion = (
+    installed: false,
+    accessibility: false,
+    paired: false,
+  );
+  Future<void> setControl(bool on) async {}
+  Future<void> refreshControl() async {}
+  Future<void> pairCompanion() async {}
+
   /// A computer's snap: the camera is allowed here.
   bool _cameraAllowed = false;
 

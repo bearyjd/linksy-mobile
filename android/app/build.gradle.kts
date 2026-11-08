@@ -83,4 +83,6 @@ dependencies {
 
     // Unit tests for the pure typing code (app.linksy.typing).
     testImplementation("junit:junit:4.13.2")
+    // Android's own org.json is a stub in local unit tests.
+    testImplementation("org.json:json:20240303")
 }
