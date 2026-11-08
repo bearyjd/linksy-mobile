@@ -886,5 +886,17 @@
   "deckWidth": "Larghezza",
   "deckHeight": "Altezza",
   "deckStartFromPortrait": "Parti dal deck verticale",
-  "deckStartEmpty": "Inizia vuoto"
+  "deckStartEmpty": "Inizia vuoto",
+  "keyboardCardTitle": "Scrivi dal tuo computer",
+  "keyboardCardWhy": "Permette a un computer associato di scrivere nel campo aperto su questo telefono, tramite Linksy Keyboard. Chiede ogni volta, e la tastiera non legge mai ciò che scrivi tu.",
+  "keyboardTurnOn": "Attiva",
+  "keyboardTurnOff": "Disattiva",
+  "keyboardOpenSettings": "Apri impostazioni tastiera",
+  "keyboardSwitch": "Cambia tastiera",
+  "keyboardStatusEnable": "Attiva Linksy Keyboard nelle impostazioni tastiera di Android.",
+  "keyboardStatusReady": "Pronto. Quando il computer chiede di scrivere, consentilo e scegli Linksy Keyboard.",
+  "keyboardStatusSwitch": "Il tuo computer vuole scrivere. Passa a Linksy Keyboard.",
+  "keyboardStatusActive": "Il tuo computer sta scrivendo con Linksy Keyboard. Cambia tastiera per interrompere.",
+  "sharingTypeRequestTitle": "{name} vuole scrivere su questo telefono",
+  "sharingTypeRequestDetail": "Scrive nel campo aperto, tramite Linksy Keyboard, finché non lo interrompi dalla notifica."
 }

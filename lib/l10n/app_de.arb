@@ -886,5 +886,17 @@
   "deckWidth": "Breite",
   "deckHeight": "Höhe",
   "deckStartFromPortrait": "Mit deinem Hochformat-Deck beginnen",
-  "deckStartEmpty": "Leer beginnen"
+  "deckStartEmpty": "Leer beginnen",
+  "keyboardCardTitle": "Vom Computer aus tippen",
+  "keyboardCardWhy": "Lässt einen gekoppelten Computer über Linksy Keyboard in das Feld tippen, das auf diesem Telefon offen ist. Er fragt jedes Mal nach, und die Tastatur liest nie, was du selbst tippst.",
+  "keyboardTurnOn": "Einschalten",
+  "keyboardTurnOff": "Ausschalten",
+  "keyboardOpenSettings": "Tastatureinstellungen öffnen",
+  "keyboardSwitch": "Tastatur wechseln",
+  "keyboardStatusEnable": "Schalte Linksy Keyboard in den Tastatureinstellungen von Android ein.",
+  "keyboardStatusReady": "Bereit. Wenn dein Computer tippen möchte, erlaube es und wähle Linksy Keyboard.",
+  "keyboardStatusSwitch": "Dein Computer möchte tippen. Wechsle zu Linksy Keyboard.",
+  "keyboardStatusActive": "Dein Computer tippt über Linksy Keyboard. Wechsle die Tastatur, um es zu beenden.",
+  "sharingTypeRequestTitle": "{name} möchte auf diesem Telefon tippen",
+  "sharingTypeRequestDetail": "Es tippt über Linksy Keyboard in das offene Feld, bis du es über die Benachrichtigung beendest."
 }

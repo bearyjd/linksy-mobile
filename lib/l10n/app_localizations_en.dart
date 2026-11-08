@@ -3272,4 +3272,48 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deckStartEmpty => 'Start empty';
+
+  @override
+  String get keyboardCardTitle => 'Type from your computer';
+
+  @override
+  String get keyboardCardWhy =>
+      'Lets a paired computer type into the box you have open on this phone, through Linksy Keyboard. It asks you every time, and the keyboard never reads what you type yourself.';
+
+  @override
+  String get keyboardTurnOn => 'Turn on';
+
+  @override
+  String get keyboardTurnOff => 'Turn off';
+
+  @override
+  String get keyboardOpenSettings => 'Open keyboard settings';
+
+  @override
+  String get keyboardSwitch => 'Switch keyboard';
+
+  @override
+  String get keyboardStatusEnable =>
+      'Turn on Linksy Keyboard in Android’s keyboard settings.';
+
+  @override
+  String get keyboardStatusReady =>
+      'Ready. When your computer asks to type, allow it and pick Linksy Keyboard.';
+
+  @override
+  String get keyboardStatusSwitch =>
+      'Your computer wants to type. Switch to Linksy Keyboard.';
+
+  @override
+  String get keyboardStatusActive =>
+      'Your computer is typing through Linksy Keyboard. Switch keyboards to stop.';
+
+  @override
+  String sharingTypeRequestTitle(String name) {
+    return '$name wants to type on this phone';
+  }
+
+  @override
+  String get sharingTypeRequestDetail =>
+      'It types into the box you have open, through Linksy Keyboard, until you stop it from the notification.';
 }

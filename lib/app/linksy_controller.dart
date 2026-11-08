@@ -136,6 +136,9 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
   /// Remote (touchpad and keyboard) sessions, by device.
   final Map<String, String> remotes = {};
 
+  /// Computers typing on this phone through Linksy Keyboard, by session.
+  final Map<String, SessionStarted> typing = {};
+
   /// Each paired device's picture (a file path), chosen on this phone.
   Map<String, String> pictures = {};
 
@@ -368,6 +371,38 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
     await _setPref('computer_notifications', on ? 'on' : null);
     await _announce();
     notifyListeners();
+  }
+
+  /// Computers may type on this phone (§4.26): the user's switch, and Linksy
+  /// Keyboard turned on in Android's settings.
+  bool get keyboardOn => prefs['keyboard'] == 'on';
+
+  /// What Android says about Linksy Keyboard now.
+  ({bool enabled, bool current, bool typing}) keyboard = (
+    enabled: false,
+    current: false,
+    typing: false,
+  );
+
+  Future<void> setKeyboard(bool on) async {
+    await _setPref('keyboard', on ? 'on' : null);
+    await refreshKeyboard();
+    await _announce();
+  }
+
+  /// Read again, after Android's settings or its keyboard picker. Announced
+  /// again when whether this phone can take typing changed.
+  Future<void> refreshKeyboard() async {
+    final before = keyboard.enabled;
+    keyboard = await LinksyPlatform.keyboardState();
+    if (keyboard.enabled != before) await _announce();
+    notifyListeners();
+  }
+
+  Future<void> stopTyping(String session) async {
+    typing.remove(session);
+    notifyListeners();
+    await node.endSession(session);
   }
 
   /// A computer's snap: the camera is allowed here.
@@ -802,6 +837,7 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
       unawaited(updates.recheck());
       // Back from Notification access or App info, maybe.
       unawaited(refreshNotificationAccess());
+      unawaited(refreshKeyboard());
       unawaited(_refreshGallery());
       unawaited(_moveLeftovers());
       _offerApps();
@@ -846,6 +882,7 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
     await LinksyPlatform.shareFiles(sharingFiles && filesReady, all: filesAll);
     await LinksyPlatform.watchCalls(pauseOnCalls);
     await refreshNotificationAccess();
+    await refreshKeyboard();
     await _refreshGallery();
     _accessRead.complete();
     unawaited(_moveLeftovers());
@@ -1497,6 +1534,7 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
       'snap',
       'sound',
       'computer_notifications',
+      'keyboard',
     };
     return [
       ...node.info.features.where((f) => !changing.contains(f)),
@@ -1506,6 +1544,8 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
       // AudioPlaybackCapture is Android 10.
       if (sdk >= 29) 'sound',
       if (computerNotifications) 'computer_notifications',
+      // Only while it can work: the switch is on and Android has the keyboard.
+      if (keyboardOn && keyboard.enabled) 'keyboard',
     ];
   }
 
@@ -2138,6 +2178,12 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
         displays[session] = e;
         LinksyPlatform.keepScreenOn(session, on: true);
         _addSession(e);
+      // A computer typing on this phone: Android reads it for Linksy Keyboard.
+      case SessionStarted(:final session, :final peer, kind: SessionKind.input)
+          when e.sharing:
+        typing[session] = e;
+        LinksyPlatform.startTyping(session, peer.name);
+        unawaited(refreshKeyboard());
       case SessionStarted(:final session, :final peer, kind: SessionKind.input):
         remotes[peer.id] = session;
         _addSession(e);
@@ -2391,6 +2437,9 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
         LinksyPlatform.keepScreenOn(session, on: true);
         _addSession(e);
       case SessionEnded(:final session):
+        if (typing.remove(session) != null) {
+          unawaited(refreshKeyboard());
+        }
         if (remotes.containsValue(session)) {
           remotes.removeWhere((_, s) => s == session);
           notifyListeners();

@@ -3316,4 +3316,48 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get deckStartEmpty => 'Начать с пустой';
+
+  @override
+  String get keyboardCardTitle => 'Ввод с компьютера';
+
+  @override
+  String get keyboardCardWhy =>
+      'Позволяет подключённому компьютеру вводить текст в открытое на этом телефоне поле через Linksy Keyboard. Каждый раз он спрашивает разрешения, а клавиатура никогда не читает то, что вы вводите сами.';
+
+  @override
+  String get keyboardTurnOn => 'Включить';
+
+  @override
+  String get keyboardTurnOff => 'Выключить';
+
+  @override
+  String get keyboardOpenSettings => 'Открыть настройки клавиатуры';
+
+  @override
+  String get keyboardSwitch => 'Сменить клавиатуру';
+
+  @override
+  String get keyboardStatusEnable =>
+      'Включите Linksy Keyboard в настройках клавиатуры Android.';
+
+  @override
+  String get keyboardStatusReady =>
+      'Готово. Когда компьютер попросит ввести текст, разрешите и выберите Linksy Keyboard.';
+
+  @override
+  String get keyboardStatusSwitch =>
+      'Компьютер хочет ввести текст. Переключитесь на Linksy Keyboard.';
+
+  @override
+  String get keyboardStatusActive =>
+      'Компьютер вводит текст через Linksy Keyboard. Смените клавиатуру, чтобы остановить.';
+
+  @override
+  String sharingTypeRequestTitle(String name) {
+    return '$name хочет вводить текст на этом телефоне';
+  }
+
+  @override
+  String get sharingTypeRequestDetail =>
+      'Текст вводится в открытое поле через Linksy Keyboard, пока вы не остановите его в уведомлении.';
 }

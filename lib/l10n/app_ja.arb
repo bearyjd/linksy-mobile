@@ -886,5 +886,17 @@
   "deckWidth": "幅",
   "deckHeight": "高さ",
   "deckStartFromPortrait": "縦向きのデッキから始める",
-  "deckStartEmpty": "空から始める"
+  "deckStartEmpty": "空から始める",
+  "keyboardCardTitle": "コンピュータから入力",
+  "keyboardCardWhy": "ペアリングしたコンピュータが、Linksy Keyboardを通じて、このスマートフォンで開いている入力欄に入力できるようにします。毎回確認があり、キーボードはあなた自身の入力を読み取りません。",
+  "keyboardTurnOn": "オンにする",
+  "keyboardTurnOff": "オフにする",
+  "keyboardOpenSettings": "キーボード設定を開く",
+  "keyboardSwitch": "キーボードを切り替え",
+  "keyboardStatusEnable": "Androidのキーボード設定でLinksy Keyboardをオンにしてください。",
+  "keyboardStatusReady": "準備完了。コンピュータが入力を求めたら許可し、Linksy Keyboardを選んでください。",
+  "keyboardStatusSwitch": "コンピュータが入力しようとしています。Linksy Keyboardに切り替えてください。",
+  "keyboardStatusActive": "コンピュータがLinksy Keyboardで入力しています。キーボードを切り替えると停止します。",
+  "sharingTypeRequestTitle": "{name}がこのスマートフォンに入力しようとしています",
+  "sharingTypeRequestDetail": "Linksy Keyboardを通じて開いている入力欄に入力します。通知から停止できます。"
 }

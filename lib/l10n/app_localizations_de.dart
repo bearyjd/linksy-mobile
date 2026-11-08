@@ -3291,4 +3291,48 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get deckStartEmpty => 'Leer beginnen';
+
+  @override
+  String get keyboardCardTitle => 'Vom Computer aus tippen';
+
+  @override
+  String get keyboardCardWhy =>
+      'Lässt einen gekoppelten Computer über Linksy Keyboard in das Feld tippen, das auf diesem Telefon offen ist. Er fragt jedes Mal nach, und die Tastatur liest nie, was du selbst tippst.';
+
+  @override
+  String get keyboardTurnOn => 'Einschalten';
+
+  @override
+  String get keyboardTurnOff => 'Ausschalten';
+
+  @override
+  String get keyboardOpenSettings => 'Tastatureinstellungen öffnen';
+
+  @override
+  String get keyboardSwitch => 'Tastatur wechseln';
+
+  @override
+  String get keyboardStatusEnable =>
+      'Schalte Linksy Keyboard in den Tastatureinstellungen von Android ein.';
+
+  @override
+  String get keyboardStatusReady =>
+      'Bereit. Wenn dein Computer tippen möchte, erlaube es und wähle Linksy Keyboard.';
+
+  @override
+  String get keyboardStatusSwitch =>
+      'Dein Computer möchte tippen. Wechsle zu Linksy Keyboard.';
+
+  @override
+  String get keyboardStatusActive =>
+      'Dein Computer tippt über Linksy Keyboard. Wechsle die Tastatur, um es zu beenden.';
+
+  @override
+  String sharingTypeRequestTitle(String name) {
+    return '$name möchte auf diesem Telefon tippen';
+  }
+
+  @override
+  String get sharingTypeRequestDetail =>
+      'Es tippt über Linksy Keyboard in das offene Feld, bis du es über die Benachrichtigung beendest.';
 }

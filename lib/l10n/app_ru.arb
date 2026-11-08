@@ -886,5 +886,17 @@
   "deckWidth": "Ширина",
   "deckHeight": "Высота",
   "deckStartFromPortrait": "Начать с портретной панели",
-  "deckStartEmpty": "Начать с пустой"
+  "deckStartEmpty": "Начать с пустой",
+  "keyboardCardTitle": "Ввод с компьютера",
+  "keyboardCardWhy": "Позволяет подключённому компьютеру вводить текст в открытое на этом телефоне поле через Linksy Keyboard. Каждый раз он спрашивает разрешения, а клавиатура никогда не читает то, что вы вводите сами.",
+  "keyboardTurnOn": "Включить",
+  "keyboardTurnOff": "Выключить",
+  "keyboardOpenSettings": "Открыть настройки клавиатуры",
+  "keyboardSwitch": "Сменить клавиатуру",
+  "keyboardStatusEnable": "Включите Linksy Keyboard в настройках клавиатуры Android.",
+  "keyboardStatusReady": "Готово. Когда компьютер попросит ввести текст, разрешите и выберите Linksy Keyboard.",
+  "keyboardStatusSwitch": "Компьютер хочет ввести текст. Переключитесь на Linksy Keyboard.",
+  "keyboardStatusActive": "Компьютер вводит текст через Linksy Keyboard. Смените клавиатуру, чтобы остановить.",
+  "sharingTypeRequestTitle": "{name} хочет вводить текст на этом телефоне",
+  "sharingTypeRequestDetail": "Текст вводится в открытое поле через Linksy Keyboard, пока вы не остановите его в уведомлении."
 }

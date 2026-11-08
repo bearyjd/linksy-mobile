@@ -3286,4 +3286,48 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get deckStartEmpty => 'Começar vazio';
+
+  @override
+  String get keyboardCardTitle => 'Digite do seu computador';
+
+  @override
+  String get keyboardCardWhy =>
+      'Permite que um computador pareado digite no campo aberto neste celular, pelo Linksy Keyboard. Ele pergunta toda vez, e o teclado nunca lê o que você mesmo digita.';
+
+  @override
+  String get keyboardTurnOn => 'Ativar';
+
+  @override
+  String get keyboardTurnOff => 'Desativar';
+
+  @override
+  String get keyboardOpenSettings => 'Abrir configurações do teclado';
+
+  @override
+  String get keyboardSwitch => 'Trocar de teclado';
+
+  @override
+  String get keyboardStatusEnable =>
+      'Ative o Linksy Keyboard nas configurações de teclado do Android.';
+
+  @override
+  String get keyboardStatusReady =>
+      'Pronto. Quando seu computador pedir para digitar, permita e escolha o Linksy Keyboard.';
+
+  @override
+  String get keyboardStatusSwitch =>
+      'Seu computador quer digitar. Troque para o Linksy Keyboard.';
+
+  @override
+  String get keyboardStatusActive =>
+      'Seu computador está digitando pelo Linksy Keyboard. Troque de teclado para parar.';
+
+  @override
+  String sharingTypeRequestTitle(String name) {
+    return '$name quer digitar neste celular';
+  }
+
+  @override
+  String get sharingTypeRequestDetail =>
+      'Ele digita no campo aberto, pelo Linksy Keyboard, até você parar pela notificação.';
 }

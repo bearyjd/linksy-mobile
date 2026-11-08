@@ -3294,4 +3294,48 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get deckStartEmpty => 'Inizia vuoto';
+
+  @override
+  String get keyboardCardTitle => 'Scrivi dal tuo computer';
+
+  @override
+  String get keyboardCardWhy =>
+      'Permette a un computer associato di scrivere nel campo aperto su questo telefono, tramite Linksy Keyboard. Chiede ogni volta, e la tastiera non legge mai ciò che scrivi tu.';
+
+  @override
+  String get keyboardTurnOn => 'Attiva';
+
+  @override
+  String get keyboardTurnOff => 'Disattiva';
+
+  @override
+  String get keyboardOpenSettings => 'Apri impostazioni tastiera';
+
+  @override
+  String get keyboardSwitch => 'Cambia tastiera';
+
+  @override
+  String get keyboardStatusEnable =>
+      'Attiva Linksy Keyboard nelle impostazioni tastiera di Android.';
+
+  @override
+  String get keyboardStatusReady =>
+      'Pronto. Quando il computer chiede di scrivere, consentilo e scegli Linksy Keyboard.';
+
+  @override
+  String get keyboardStatusSwitch =>
+      'Il tuo computer vuole scrivere. Passa a Linksy Keyboard.';
+
+  @override
+  String get keyboardStatusActive =>
+      'Il tuo computer sta scrivendo con Linksy Keyboard. Cambia tastiera per interrompere.';
+
+  @override
+  String sharingTypeRequestTitle(String name) {
+    return '$name vuole scrivere su questo telefono';
+  }
+
+  @override
+  String get sharingTypeRequestDetail =>
+      'Scrive nel campo aperto, tramite Linksy Keyboard, finché non lo interrompi dalla notifica.';
 }

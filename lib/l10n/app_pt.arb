@@ -886,5 +886,17 @@
   "deckWidth": "Largura",
   "deckHeight": "Altura",
   "deckStartFromPortrait": "Começar do seu deck vertical",
-  "deckStartEmpty": "Começar vazio"
+  "deckStartEmpty": "Começar vazio",
+  "keyboardCardTitle": "Digite do seu computador",
+  "keyboardCardWhy": "Permite que um computador pareado digite no campo aberto neste celular, pelo Linksy Keyboard. Ele pergunta toda vez, e o teclado nunca lê o que você mesmo digita.",
+  "keyboardTurnOn": "Ativar",
+  "keyboardTurnOff": "Desativar",
+  "keyboardOpenSettings": "Abrir configurações do teclado",
+  "keyboardSwitch": "Trocar de teclado",
+  "keyboardStatusEnable": "Ative o Linksy Keyboard nas configurações de teclado do Android.",
+  "keyboardStatusReady": "Pronto. Quando seu computador pedir para digitar, permita e escolha o Linksy Keyboard.",
+  "keyboardStatusSwitch": "Seu computador quer digitar. Troque para o Linksy Keyboard.",
+  "keyboardStatusActive": "Seu computador está digitando pelo Linksy Keyboard. Troque de teclado para parar.",
+  "sharingTypeRequestTitle": "{name} quer digitar neste celular",
+  "sharingTypeRequestDetail": "Ele digita no campo aberto, pelo Linksy Keyboard, até você parar pela notificação."
 }

@@ -64,6 +64,10 @@ void main() {
     final c = LinksyController(node, ActivityStore(null));
     c.prefs = {'onboarded': '1'};
     await c.start();
+    // Android's settings load after start (not awaited by it).
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
     return (c, node);
   }
 
@@ -170,7 +174,9 @@ void main() {
           theme: buildTheme(Brightness.light),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const Scaffold(body: SingleChildScrollView(child: KeyboardCard())),
+          home: const Scaffold(
+            body: SingleChildScrollView(child: KeyboardCard()),
+          ),
         ),
       ),
     );
@@ -202,7 +208,10 @@ void main() {
     keyboard['current'] = true;
     await c.refreshKeyboard();
     await tester.pumpAndSettle();
-    expect(find.textContaining('is typing through Linksy Keyboard'), findsOneWidget);
+    expect(
+      find.textContaining('is typing through Linksy Keyboard'),
+      findsOneWidget,
+    );
 
     await tester.tap(find.text('Turn off'));
     await tester.pumpAndSettle();
@@ -235,7 +244,10 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Studio Desktop wants to type on this phone'), findsOneWidget);
+    expect(
+      find.text('Studio Desktop wants to type on this phone'),
+      findsOneWidget,
+    );
     expect(find.textContaining('touchpad'), findsNothing);
     expect(find.text('Allow'), findsOneWidget);
     await finish(tester, c);

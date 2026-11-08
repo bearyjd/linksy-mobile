@@ -886,5 +886,17 @@
   "deckWidth": "Largeur",
   "deckHeight": "Hauteur",
   "deckStartFromPortrait": "Partir de votre deck portrait",
-  "deckStartEmpty": "Partir de zéro"
+  "deckStartEmpty": "Partir de zéro",
+  "keyboardCardTitle": "Saisir depuis votre ordinateur",
+  "keyboardCardWhy": "Permet à un ordinateur associé de saisir du texte dans le champ ouvert sur ce téléphone, via Linksy Keyboard. Il vous demande à chaque fois, et le clavier ne lit jamais ce que vous saisissez vous-même.",
+  "keyboardTurnOn": "Activer",
+  "keyboardTurnOff": "Désactiver",
+  "keyboardOpenSettings": "Ouvrir les réglages du clavier",
+  "keyboardSwitch": "Changer de clavier",
+  "keyboardStatusEnable": "Activez Linksy Keyboard dans les réglages du clavier d’Android.",
+  "keyboardStatusReady": "Prêt. Quand votre ordinateur demande à saisir du texte, autorisez-le et choisissez Linksy Keyboard.",
+  "keyboardStatusSwitch": "Votre ordinateur veut saisir du texte. Passez à Linksy Keyboard.",
+  "keyboardStatusActive": "Votre ordinateur saisit du texte via Linksy Keyboard. Changez de clavier pour arrêter.",
+  "sharingTypeRequestTitle": "{name} veut saisir du texte sur ce téléphone",
+  "sharingTypeRequestDetail": "Il saisit dans le champ ouvert, via Linksy Keyboard, jusqu’à ce que vous l’arrêtiez depuis la notification."
 }
