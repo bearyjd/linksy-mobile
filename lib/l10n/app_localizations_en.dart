@@ -3307,4 +3307,57 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get sharingTypeRequestDetail =>
       'It types into the box you have open, through Linksy Keyboard, until you stop it from the notification.';
+
+  @override
+  String get controlCardTitle => 'Control from your computer';
+
+  @override
+  String get controlCardWhy =>
+      'Lets a computer you allow tap, swipe and type on this phone while it shows your screen. It needs the separate Linksy Control app, which Android treats as an Accessibility service. It asks you every time, and you can stop it from the notification.';
+
+  @override
+  String get controlTurnOn => 'Turn on';
+
+  @override
+  String get controlTurnOff => 'Turn off';
+
+  @override
+  String get controlHowToInstall => 'How to install it';
+
+  @override
+  String get controlOpenAccessibility => 'Open Accessibility settings';
+
+  @override
+  String get controlOpenAppInfo => 'Open app info';
+
+  @override
+  String get controlPair => 'Pair with Linksy';
+
+  @override
+  String get controlStatusInstall =>
+      'Install the Linksy Control app first. It is a separate app, and its page explains how.';
+
+  @override
+  String get controlStatusAccessibility =>
+      'Turn on Linksy Control in Android’s Accessibility settings. If the switch is greyed out, open the app’s info, then the ⋮ menu, and choose Allow restricted settings.';
+
+  @override
+  String get controlStatusPair =>
+      'Approve Linksy once in the Linksy Control app.';
+
+  @override
+  String get controlStatusReady =>
+      'Ready. When your computer asks to control this phone, allow it.';
+
+  @override
+  String get controlStatusActive =>
+      'Your computer is controlling this phone. Stop it from the notification.';
+
+  @override
+  String get controlRefusal =>
+      'If your phone won’t install the app or won’t let you turn it on, that is Android protecting you. Linksy won’t ask you to turn off Play Protect or work around it. Typing from your computer and viewing your screen still work.';
+
+  @override
+  String get controlNotReady =>
+      'Control from your computer isn’t ready any more. Open Linksy’s permissions to check it.';
 }

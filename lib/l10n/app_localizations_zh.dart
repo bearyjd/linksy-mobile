@@ -3184,4 +3184,53 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get sharingTypeRequestDetail =>
       '它会通过 Linksy Keyboard 在打开的输入框中输入，直到你在通知中停止。';
+
+  @override
+  String get controlCardTitle => '从电脑控制';
+
+  @override
+  String get controlCardWhy =>
+      '在显示你屏幕的同时，允许受信任的电脑在这部手机上点按、滑动和输入。需要单独的 Linksy Control 应用，Android 将其视为无障碍服务。每次都会询问你，你也可以从通知中停止。';
+
+  @override
+  String get controlTurnOn => '开启';
+
+  @override
+  String get controlTurnOff => '关闭';
+
+  @override
+  String get controlHowToInstall => '如何安装';
+
+  @override
+  String get controlOpenAccessibility => '打开无障碍设置';
+
+  @override
+  String get controlOpenAppInfo => '打开应用信息';
+
+  @override
+  String get controlPair => '与 Linksy 配对';
+
+  @override
+  String get controlStatusInstall =>
+      '请先安装 Linksy Control 应用。它是一个单独的应用，其页面说明了方法。';
+
+  @override
+  String get controlStatusAccessibility =>
+      '在 Android 的无障碍设置中开启 Linksy Control。如果开关是灰色的，请打开应用信息，再点 ⋮ 菜单，选择“允许受限设置”。';
+
+  @override
+  String get controlStatusPair => '在 Linksy Control 应用中批准一次 Linksy。';
+
+  @override
+  String get controlStatusReady => '已就绪。当电脑请求控制这部手机时，请允许。';
+
+  @override
+  String get controlStatusActive => '电脑正在控制这部手机。可从通知中停止。';
+
+  @override
+  String get controlRefusal =>
+      '如果手机不让你安装该应用或开启它，那是 Android 在保护你。Linksy 不会要求你关闭 Play Protect 或绕过任何限制。从电脑输入和查看屏幕仍然可用。';
+
+  @override
+  String get controlNotReady => '从电脑控制已不可用。请在 Linksy 的权限中检查。';
 }

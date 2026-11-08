@@ -905,6 +905,29 @@ abstract final class LinksyPlatform {
   /// Android's "choose keyboard" picker.
   static Future<void> showKeyboardPicker() => _call<void>('showKeyboardPicker');
 
+  /// The Linksy Control companion app on this phone: whether it is installed,
+  /// turned on in Accessibility settings, and paired with Linksy.
+  static Future<({bool installed, bool accessibility, bool paired})>
+  controlState() async {
+    final m = await _call<Map<Object?, Object?>>('controlState');
+    return (
+      installed: m?['installed'] == true,
+      accessibility: m?['accessibility'] == true,
+      paired: m?['paired'] == true,
+    );
+  }
+
+  /// Android's Accessibility settings, where the companion is turned on.
+  static Future<void> openAccessibilitySettings() =>
+      _call<void>('openAccessibilitySettings');
+
+  /// The companion's App info, where "Allow restricted settings" is.
+  static Future<void> openCompanionInfo() => _call<void>('openCompanionInfo');
+
+  /// The companion's own pairing screen; true when the user approved.
+  static Future<bool> pairCompanion() async =>
+      await _call<bool>('pairCompanion') ?? false;
+
   /// Shares Android's service runs now: (session, kind, peer id). The app
   /// may have restarted while one went on.
   static Future<List<(String, String, String)>> activeShares() async => [

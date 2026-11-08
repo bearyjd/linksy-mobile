@@ -3329,4 +3329,57 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get sharingTypeRequestDetail =>
       'Escribe en el campo abierto, a través de Linksy Keyboard, hasta que lo detengas desde la notificación.';
+
+  @override
+  String get controlCardTitle => 'Controlar desde tu ordenador';
+
+  @override
+  String get controlCardWhy =>
+      'Permite que un ordenador autorizado toque, deslice y escriba en este teléfono mientras muestra tu pantalla. Necesita la app independiente Linksy Control, que Android trata como un servicio de accesibilidad. Te pregunta cada vez y puedes detenerlo desde la notificación.';
+
+  @override
+  String get controlTurnOn => 'Activar';
+
+  @override
+  String get controlTurnOff => 'Desactivar';
+
+  @override
+  String get controlHowToInstall => 'Cómo instalarla';
+
+  @override
+  String get controlOpenAccessibility => 'Abrir ajustes de accesibilidad';
+
+  @override
+  String get controlOpenAppInfo => 'Abrir información de la app';
+
+  @override
+  String get controlPair => 'Vincular con Linksy';
+
+  @override
+  String get controlStatusInstall =>
+      'Instala primero la app Linksy Control. Es una app independiente y su página explica cómo.';
+
+  @override
+  String get controlStatusAccessibility =>
+      'Activa Linksy Control en los ajustes de accesibilidad de Android. Si el interruptor está en gris, abre la información de la app, luego el menú ⋮ y elige «Permitir ajustes restringidos».';
+
+  @override
+  String get controlStatusPair =>
+      'Aprueba Linksy una vez en la app Linksy Control.';
+
+  @override
+  String get controlStatusReady =>
+      'Listo. Cuando tu ordenador pida controlar este teléfono, permítelo.';
+
+  @override
+  String get controlStatusActive =>
+      'Tu ordenador está controlando este teléfono. Deténlo desde la notificación.';
+
+  @override
+  String get controlRefusal =>
+      'Si tu teléfono no instala la app o no te deja activarla, es Android protegiéndote. Linksy no te pedirá desactivar Play Protect ni saltarte nada. Escribir desde el ordenador y ver tu pantalla siguen funcionando.';
+
+  @override
+  String get controlNotReady =>
+      'El control desde el ordenador ya no está listo. Revísalo en los permisos de Linksy.';
 }

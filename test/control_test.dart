@@ -84,7 +84,9 @@ void main() {
           theme: buildTheme(Brightness.light),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const Scaffold(body: SingleChildScrollView(child: ControlCard())),
+          home: const Scaffold(
+            body: SingleChildScrollView(child: ControlCard()),
+          ),
         ),
       ),
     );

@@ -896,5 +896,20 @@
   "keyboardStatusSwitch": "Votre ordinateur veut saisir du texte. Passez à Linksy Keyboard.",
   "keyboardStatusActive": "Votre ordinateur saisit du texte via Linksy Keyboard. Changez de clavier pour arrêter.",
   "sharingTypeRequestTitle": "{name} veut saisir du texte sur ce téléphone",
-  "sharingTypeRequestDetail": "Il saisit dans le champ ouvert, via Linksy Keyboard, jusqu’à ce que vous l’arrêtiez depuis la notification."
+  "sharingTypeRequestDetail": "Il saisit dans le champ ouvert, via Linksy Keyboard, jusqu’à ce que vous l’arrêtiez depuis la notification.",
+  "controlCardTitle": "Contrôler depuis ton ordinateur",
+  "controlCardWhy": "Permet à un ordinateur autorisé de toucher, balayer et saisir du texte sur ce téléphone pendant qu’il affiche ton écran. Il faut l’application distincte Linksy Control, qu’Android traite comme un service d’accessibilité. Il te demande chaque fois, et tu peux l’arrêter depuis la notification.",
+  "controlTurnOn": "Activer",
+  "controlTurnOff": "Désactiver",
+  "controlHowToInstall": "Comment l’installer",
+  "controlOpenAccessibility": "Ouvrir les paramètres d’accessibilité",
+  "controlOpenAppInfo": "Ouvrir les infos de l’appli",
+  "controlPair": "Associer à Linksy",
+  "controlStatusInstall": "Installe d’abord l’application Linksy Control. C’est une application distincte, et sa page explique comment faire.",
+  "controlStatusAccessibility": "Active Linksy Control dans les paramètres d’accessibilité d’Android. Si l’interrupteur est grisé, ouvre les infos de l’appli, puis le menu ⋮ et choisis « Autoriser les paramètres restreints ».",
+  "controlStatusPair": "Approuve Linksy une fois dans l’application Linksy Control.",
+  "controlStatusReady": "Prêt. Quand ton ordinateur demande à contrôler ce téléphone, autorise-le.",
+  "controlStatusActive": "Ton ordinateur contrôle ce téléphone. Arrête-le depuis la notification.",
+  "controlRefusal": "Si ton téléphone refuse d’installer l’appli ou de l’activer, c’est Android qui te protège. Linksy ne te demandera jamais de désactiver Play Protect ni de contourner quoi que ce soit. La saisie depuis l’ordinateur et l’affichage de ton écran continuent de fonctionner.",
+  "controlNotReady": "Le contrôle depuis l’ordinateur n’est plus prêt. Vérifie-le dans les autorisations de Linksy."
 }

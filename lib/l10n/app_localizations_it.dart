@@ -3329,4 +3329,57 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get sharingTypeRequestDetail =>
       'Scrive nel campo aperto, tramite Linksy Keyboard, finché non lo interrompi dalla notifica.';
+
+  @override
+  String get controlCardTitle => 'Controlla dal computer';
+
+  @override
+  String get controlCardWhy =>
+      'Permette a un computer autorizzato di toccare, scorrere e scrivere su questo telefono mentre mostra il tuo schermo. Serve l’app separata Linksy Control, che Android tratta come servizio di accessibilità. Chiede ogni volta e puoi fermarlo dalla notifica.';
+
+  @override
+  String get controlTurnOn => 'Attiva';
+
+  @override
+  String get controlTurnOff => 'Disattiva';
+
+  @override
+  String get controlHowToInstall => 'Come installarla';
+
+  @override
+  String get controlOpenAccessibility => 'Apri impostazioni di accessibilità';
+
+  @override
+  String get controlOpenAppInfo => 'Apri info app';
+
+  @override
+  String get controlPair => 'Associa a Linksy';
+
+  @override
+  String get controlStatusInstall =>
+      'Installa prima l’app Linksy Control. È un’app separata e la sua pagina spiega come.';
+
+  @override
+  String get controlStatusAccessibility =>
+      'Attiva Linksy Control nelle impostazioni di accessibilità di Android. Se l’interruttore è disattivato, apri le info dell’app, poi il menu ⋮ e scegli «Consenti impostazioni con limitazioni».';
+
+  @override
+  String get controlStatusPair =>
+      'Approva Linksy una volta nell’app Linksy Control.';
+
+  @override
+  String get controlStatusReady =>
+      'Pronto. Quando il computer chiede di controllare questo telefono, consentilo.';
+
+  @override
+  String get controlStatusActive =>
+      'Il tuo computer sta controllando questo telefono. Fermalo dalla notifica.';
+
+  @override
+  String get controlRefusal =>
+      'Se il telefono non installa l’app o non te la fa attivare, è Android che ti protegge. Linksy non ti chiederà di disattivare Play Protect né di aggirare nulla. Scrivere dal computer e vedere lo schermo continuano a funzionare.';
+
+  @override
+  String get controlNotReady =>
+      'Il controllo dal computer non è più pronto. Controllalo nelle autorizzazioni di Linksy.';
 }

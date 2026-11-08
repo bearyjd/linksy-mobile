@@ -896,5 +896,20 @@
   "keyboardStatusSwitch": "你的电脑想要输入。请切换到 Linksy Keyboard。",
   "keyboardStatusActive": "你的电脑正在通过 Linksy Keyboard 输入。切换键盘即可停止。",
   "sharingTypeRequestTitle": "{name} 想在这部手机上输入",
-  "sharingTypeRequestDetail": "它会通过 Linksy Keyboard 在打开的输入框中输入，直到你在通知中停止。"
+  "sharingTypeRequestDetail": "它会通过 Linksy Keyboard 在打开的输入框中输入，直到你在通知中停止。",
+  "controlCardTitle": "从电脑控制",
+  "controlCardWhy": "在显示你屏幕的同时，允许受信任的电脑在这部手机上点按、滑动和输入。需要单独的 Linksy Control 应用，Android 将其视为无障碍服务。每次都会询问你，你也可以从通知中停止。",
+  "controlTurnOn": "开启",
+  "controlTurnOff": "关闭",
+  "controlHowToInstall": "如何安装",
+  "controlOpenAccessibility": "打开无障碍设置",
+  "controlOpenAppInfo": "打开应用信息",
+  "controlPair": "与 Linksy 配对",
+  "controlStatusInstall": "请先安装 Linksy Control 应用。它是一个单独的应用，其页面说明了方法。",
+  "controlStatusAccessibility": "在 Android 的无障碍设置中开启 Linksy Control。如果开关是灰色的，请打开应用信息，再点 ⋮ 菜单，选择“允许受限设置”。",
+  "controlStatusPair": "在 Linksy Control 应用中批准一次 Linksy。",
+  "controlStatusReady": "已就绪。当电脑请求控制这部手机时，请允许。",
+  "controlStatusActive": "电脑正在控制这部手机。可从通知中停止。",
+  "controlRefusal": "如果手机不让你安装该应用或开启它，那是 Android 在保护你。Linksy 不会要求你关闭 Play Protect 或绕过任何限制。从电脑输入和查看屏幕仍然可用。",
+  "controlNotReady": "从电脑控制已不可用。请在 Linksy 的权限中检查。"
 }

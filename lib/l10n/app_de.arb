@@ -896,5 +896,20 @@
   "keyboardStatusSwitch": "Dein Computer möchte tippen. Wechsle zu Linksy Keyboard.",
   "keyboardStatusActive": "Dein Computer tippt über Linksy Keyboard. Wechsle die Tastatur, um es zu beenden.",
   "sharingTypeRequestTitle": "{name} möchte auf diesem Telefon tippen",
-  "sharingTypeRequestDetail": "Es tippt über Linksy Keyboard in das offene Feld, bis du es über die Benachrichtigung beendest."
+  "sharingTypeRequestDetail": "Es tippt über Linksy Keyboard in das offene Feld, bis du es über die Benachrichtigung beendest.",
+  "controlCardTitle": "Vom Computer aus steuern",
+  "controlCardWhy": "Lässt einen erlaubten Computer auf diesem Telefon tippen, wischen und schreiben, während er deinen Bildschirm zeigt. Dafür braucht es die separate App Linksy Control, die Android als Bedienungshilfe behandelt. Er fragt jedes Mal nach, und du kannst es über die Benachrichtigung beenden.",
+  "controlTurnOn": "Einschalten",
+  "controlTurnOff": "Ausschalten",
+  "controlHowToInstall": "So installierst du sie",
+  "controlOpenAccessibility": "Bedienungshilfen öffnen",
+  "controlOpenAppInfo": "App-Info öffnen",
+  "controlPair": "Mit Linksy koppeln",
+  "controlStatusInstall": "Installiere zuerst die App Linksy Control. Sie ist eine separate App, und ihre Seite erklärt, wie.",
+  "controlStatusAccessibility": "Schalte Linksy Control in den Bedienungshilfen von Android ein. Ist der Schalter ausgegraut, öffne die App-Info, dann das ⋮-Menü und wähle „Eingeschränkte Einstellungen zulassen“.",
+  "controlStatusPair": "Bestätige Linksy einmal in der App Linksy Control.",
+  "controlStatusReady": "Bereit. Wenn dein Computer dieses Telefon steuern möchte, erlaube es.",
+  "controlStatusActive": "Dein Computer steuert dieses Telefon. Beende es über die Benachrichtigung.",
+  "controlRefusal": "Wenn dein Telefon die App nicht installiert oder das Einschalten nicht zulässt, schützt Android dich. Linksy verlangt nie, Play Protect auszuschalten oder etwas zu umgehen. Tippen vom Computer und Bildschirmansicht funktionieren weiterhin.",
+  "controlNotReady": "Die Steuerung vom Computer ist nicht mehr bereit. Prüfe sie in den Berechtigungen von Linksy."
 }

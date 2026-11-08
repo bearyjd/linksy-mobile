@@ -3339,4 +3339,58 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get sharingTypeRequestDetail =>
       'Il saisit dans le champ ouvert, via Linksy Keyboard, jusqu’à ce que vous l’arrêtiez depuis la notification.';
+
+  @override
+  String get controlCardTitle => 'Contrôler depuis ton ordinateur';
+
+  @override
+  String get controlCardWhy =>
+      'Permet à un ordinateur autorisé de toucher, balayer et saisir du texte sur ce téléphone pendant qu’il affiche ton écran. Il faut l’application distincte Linksy Control, qu’Android traite comme un service d’accessibilité. Il te demande chaque fois, et tu peux l’arrêter depuis la notification.';
+
+  @override
+  String get controlTurnOn => 'Activer';
+
+  @override
+  String get controlTurnOff => 'Désactiver';
+
+  @override
+  String get controlHowToInstall => 'Comment l’installer';
+
+  @override
+  String get controlOpenAccessibility =>
+      'Ouvrir les paramètres d’accessibilité';
+
+  @override
+  String get controlOpenAppInfo => 'Ouvrir les infos de l’appli';
+
+  @override
+  String get controlPair => 'Associer à Linksy';
+
+  @override
+  String get controlStatusInstall =>
+      'Installe d’abord l’application Linksy Control. C’est une application distincte, et sa page explique comment faire.';
+
+  @override
+  String get controlStatusAccessibility =>
+      'Active Linksy Control dans les paramètres d’accessibilité d’Android. Si l’interrupteur est grisé, ouvre les infos de l’appli, puis le menu ⋮ et choisis « Autoriser les paramètres restreints ».';
+
+  @override
+  String get controlStatusPair =>
+      'Approuve Linksy une fois dans l’application Linksy Control.';
+
+  @override
+  String get controlStatusReady =>
+      'Prêt. Quand ton ordinateur demande à contrôler ce téléphone, autorise-le.';
+
+  @override
+  String get controlStatusActive =>
+      'Ton ordinateur contrôle ce téléphone. Arrête-le depuis la notification.';
+
+  @override
+  String get controlRefusal =>
+      'Si ton téléphone refuse d’installer l’appli ou de l’activer, c’est Android qui te protège. Linksy ne te demandera jamais de désactiver Play Protect ni de contourner quoi que ce soit. La saisie depuis l’ordinateur et l’affichage de ton écran continuent de fonctionner.';
+
+  @override
+  String get controlNotReady =>
+      'Le contrôle depuis l’ordinateur n’est plus prêt. Vérifie-le dans les autorisations de Linksy.';
 }
