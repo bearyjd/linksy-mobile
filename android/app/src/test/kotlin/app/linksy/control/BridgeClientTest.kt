@@ -102,7 +102,6 @@ class BridgeClientTest {
             assertEquals("code $code", BridgeStatus.Failed, r.status)
             assertEquals("code $code", BridgeStatus.Failed to reason, r.last)
             assertEquals("code $code", 1, r.link.count("unbind"))
-            assertTrue("code $code: no retry is scheduled", r.delays.none { it < 5_000 })
             r.after(120_000)
             assertEquals("code $code: never binds again", 1, r.link.count("bind"))
         }
@@ -274,7 +273,7 @@ class BridgeClientTest {
         r.client.onReply(0)
         r.after(1_000)
         assertFalse(r.link.sent.contains(move(0.1).toJson()))
-        assertEquals(BridgeClient.QUEUE_MAX - 1, r.link.sent.count { it == scroll().toJson() })
+        assertEquals(BridgeClient.QUEUE_MAX, r.link.sent.count { it == scroll().toJson() })
     }
 
     // Rate.

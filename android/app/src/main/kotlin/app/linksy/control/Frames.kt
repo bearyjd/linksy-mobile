@@ -9,7 +9,30 @@ class FrameDecoder(private val maxFrame: Int = MAX_FRAME) {
     var broken = false
         private set
 
-    fun feed(chunk: ByteArray): List<String> = TODO("stub")
+    private var pending = ByteArray(0)
+
+    fun feed(chunk: ByteArray): List<String> {
+        if (broken) return emptyList()
+        pending += chunk
+        val frames = ArrayList<String>()
+        var pos = 0
+        while (pending.size - pos >= 4) {
+            val length = ((pending[pos].toInt() and 0xFF) shl 24) or
+                ((pending[pos + 1].toInt() and 0xFF) shl 16) or
+                ((pending[pos + 2].toInt() and 0xFF) shl 8) or
+                (pending[pos + 3].toInt() and 0xFF)
+            if (length < 0 || length > maxFrame) {
+                broken = true
+                pending = ByteArray(0)
+                return frames
+            }
+            if (pending.size - pos - 4 < length) break
+            if (length > 0) frames += String(pending, pos + 4, length, Charsets.UTF_8)
+            pos += 4 + length
+        }
+        pending = pending.copyOfRange(pos, pending.size)
+        return frames
+    }
 
     companion object {
         const val MAX_FRAME = 64 * 1024
