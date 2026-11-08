@@ -2,7 +2,9 @@ package app.linksy.typing
 
 import android.view.KeyEvent
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class KeysymMapTest {
@@ -32,14 +34,37 @@ class KeysymMapTest {
         assertEquals(KeyEvent.KEYCODE_SPACE, KeysymMap.keyCode(0x20))
     }
 
-    @Test fun modifiersAreKeysWithAMeta() {
+    @Test fun onlyShiftIsAKeyWithAMeta() {
         assertEquals(KeyEvent.KEYCODE_SHIFT_LEFT, KeysymMap.keyCode(0xFFE1))
-        assertEquals(KeyEvent.KEYCODE_CTRL_RIGHT, KeysymMap.keyCode(0xFFE4))
-        assertEquals(KeyEvent.KEYCODE_ALT_LEFT, KeysymMap.keyCode(0xFFE9))
         assertEquals(KeyEvent.META_SHIFT_ON or KeyEvent.META_SHIFT_LEFT_ON, KeysymMap.meta(KeyEvent.KEYCODE_SHIFT_LEFT))
-        assertEquals(KeyEvent.META_CTRL_ON or KeyEvent.META_CTRL_RIGHT_ON, KeysymMap.meta(KeyEvent.KEYCODE_CTRL_RIGHT))
-        assertEquals(KeyEvent.META_ALT_ON or KeyEvent.META_ALT_LEFT_ON, KeysymMap.meta(KeyEvent.KEYCODE_ALT_LEFT))
+        assertEquals(KeyEvent.META_SHIFT_ON or KeyEvent.META_SHIFT_RIGHT_ON, KeysymMap.meta(KeyEvent.KEYCODE_SHIFT_RIGHT))
         assertEquals(0, KeysymMap.meta(KeyEvent.KEYCODE_A))
+        // Ctrl and Alt are never forwarded: with a letter they would be clipboard shortcuts.
+        for (keysym in longArrayOf(0xFFE3, 0xFFE4, 0xFFE9, 0xFFEA)) assertNull(KeysymMap.keyCode(keysym))
+        assertEquals(0, KeysymMap.meta(KeyEvent.KEYCODE_CTRL_LEFT))
+    }
+
+    @Test fun chordModifiersAreCtrlAltMetaAndSuper() {
+        for (keysym in longArrayOf(0xFFE3, 0xFFE4, 0xFFE9, 0xFFEA, 0xFFE7, 0xFFE8, 0xFFEB, 0xFFEC)) {
+            assertTrue("0x" + keysym.toString(16), KeysymMap.isChordModifier(keysym))
+        }
+        for (keysym in longArrayOf(0xFFE1, 0xFFE2, 'a'.code.toLong(), 0xFF0D, 0)) {
+            assertFalse("0x" + keysym.toString(16), KeysymMap.isChordModifier(keysym))
+        }
+    }
+
+    @Test fun deletionIsRealDeleteKeys() {
+        assertEquals(KeyEvent.KEYCODE_DEL, KeysymMap.keyCode(0xFF08))
+        assertEquals(KeyEvent.KEYCODE_FORWARD_DEL, KeysymMap.keyCode(0xFFFF))
+    }
+
+    @Test fun printableKeysAreLettersDigitsAndSpace() {
+        for (code in listOf(KeyEvent.KEYCODE_A, KeyEvent.KEYCODE_Z, KeyEvent.KEYCODE_0, KeyEvent.KEYCODE_9, KeyEvent.KEYCODE_SPACE)) {
+            assertTrue(code.toString(), KeysymMap.isPrintable(code))
+        }
+        for (code in listOf(KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_TAB, KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_F1, KeyEvent.KEYCODE_DEL)) {
+            assertFalse(code.toString(), KeysymMap.isPrintable(code))
+        }
     }
 
     @Test fun refusesKeysThatActOutsideTheField() {

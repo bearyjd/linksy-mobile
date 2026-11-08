@@ -12,6 +12,13 @@ class TypingEventTest {
         assertEquals(TypingEvent.Text("hé"), event)
     }
 
+    @Test fun anInvalidByteBecomesTheReplacementCharacterAndNeverThrows() {
+        val event = TypingEvent.decode(byteArrayOf('T'.code.toByte(), 'a'.code.toByte(), 0xFF.toByte(), 'b'.code.toByte()))
+        assertEquals(TypingEvent.Text("a\uFFFDb"), event)
+        // A cut multi-byte sequence too.
+        assertEquals(TypingEvent.Text("\uFFFD"), TypingEvent.decode(byteArrayOf('T'.code.toByte(), 0xC3.toByte())))
+    }
+
     @Test fun decodesAKeyPressAndRelease() {
         val press = byteArrayOf('K'.code.toByte(), 1, 0, 0, 0xFF.toByte(), 0x0D)
         val release = byteArrayOf('K'.code.toByte(), 0, 0, 0, 0xFF.toByte(), 0x0D)

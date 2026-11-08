@@ -6,27 +6,62 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TypingGateTest {
-    @Test fun typesOnlyWithASessionAndALiveKeyboard() {
+    @Test fun typesOnlyWithASessionAndATypableField() {
         val gate = TypingGate()
-        assertFalse(gate.canType())
-        gate.begin("s1")
-        assertFalse(gate.canType())
-        gate.keyboardLive(true)
-        assertTrue(gate.canType())
-        gate.keyboardLive(false)
-        assertFalse(gate.canType())
+        assertFalse(gate.canType("s1", 1))
+        val g = gate.begin("s1")
+        assertFalse(gate.canType("s1", g))
+        gate.setField(FieldState.Typable)
+        assertTrue(gate.canType("s1", g))
+        for (paused in listOf(FieldState.None, FieldState.NoInput, FieldState.Password)) {
+            gate.setField(paused)
+            assertFalse(paused.name, gate.canType("s1", g))
+        }
     }
 
-    @Test fun stopsTypingWhenTheLastSessionEnds() {
+    @Test fun endingASessionStopsItsQueuedEventsAtOnce() {
         val gate = TypingGate()
-        gate.keyboardLive(true)
-        gate.begin("a")
-        gate.begin("b")
+        gate.setField(FieldState.Typable)
+        val a = gate.begin("a")
+        val b = gate.begin("b")
         gate.end("a")
-        assertTrue(gate.canType())
+        assertFalse(gate.canType("a", a))
+        assertTrue(gate.canType("b", b))
         gate.end("b")
-        assertFalse(gate.canType())
+        assertFalse(gate.canType("b", b))
         assertTrue(gate.sessions().isEmpty())
+    }
+
+    @Test fun aSessionIdUsedAgainDoesNotRevivePostedEvents() {
+        val gate = TypingGate()
+        gate.setField(FieldState.Typable)
+        val first = gate.begin("s")
+        gate.end("s")
+        val second = gate.begin("s")
+        assertFalse(gate.canType("s", first))
+        assertTrue(gate.canType("s", second))
+    }
+
+    @Test fun aRefusedDeliveryIsShownAndRecovers() {
+        val gate = TypingGate()
+        val g = gate.begin("s")
+        gate.setField(FieldState.Typable)
+        assertFalse(gate.delivered(true))
+        assertTrue(gate.delivered(false))
+        assertEquals(FieldState.Refused, gate.field())
+        // Still tried: the next one may work.
+        assertTrue(gate.canType("s", g))
+        assertFalse(gate.delivered(false))
+        assertTrue(gate.delivered(true))
+        assertEquals(FieldState.Typable, gate.field())
+    }
+
+    @Test fun aPausedFieldIsNotMarkedRefused() {
+        val gate = TypingGate()
+        gate.begin("s")
+        gate.setField(FieldState.Password)
+        assertFalse(gate.delivered(false))
+        assertEquals(FieldState.Password, gate.field())
     }
 
     @Test fun switchingAwayAfterBeingTheKeyboardEndsTheSessions() {

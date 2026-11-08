@@ -3,22 +3,24 @@ package app.linksy.typing
 import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** Records what the Typist asks of the field. */
+/** Records what the Typist asks of the field; [accepts] is what the field answers. */
 private class FakeEditor(
     override var multiLine: Boolean = false,
-    override var hasSelection: Boolean = false,
     override var enterAction: Int? = null,
+    var accepts: Boolean = true,
 ) : Editor {
     val calls = mutableListOf<String>()
     override fun finishComposingText() { calls += "finish" }
-    override fun commitText(text: String) { calls += "commit:$text" }
-    override fun deleteBackward() { calls += "back" }
-    override fun deleteForward() { calls += "forward" }
-    override fun performEditorAction(action: Int) { calls += "action:$action" }
-    override fun key(code: Int, down: Boolean, meta: Int) { calls += "key:$code:${if (down) "down" else "up"}:$meta" }
+    override fun commitText(text: String): Boolean { calls += "commit:$text"; return accepts }
+    override fun performEditorAction(action: Int): Boolean { calls += "action:$action"; return accepts }
+    override fun key(code: Int, down: Boolean, meta: Int): Boolean {
+        calls += "key:$code:${if (down) "down" else "up"}:$meta"
+        return accepts
+    }
 }
 
 class TypistTest {
@@ -34,6 +36,12 @@ class TypistTest {
         val editor = FakeEditor(multiLine = false, enterAction = EditorInfo.IME_ACTION_SEND)
         Typist(editor).apply(TypingEvent.Text("a\nb\n"))
         assertEquals(listOf("finish", "commit:a b "), editor.calls)
+    }
+
+    @Test fun everyKindOfLineBreakIsASpaceInASingleLineField() {
+        val editor = FakeEditor(multiLine = false)
+        Typist(editor).apply(TypingEvent.Text("a\r\nb\rc\nd"))
+        assertEquals(listOf("finish", "commit:a b c d"), editor.calls)
     }
 
     @Test fun aPastedNewlineStaysInAMultiLineField() {
@@ -62,23 +70,32 @@ class TypistTest {
         assertEquals(KeyEvent.KEYCODE_ENTER, plain.calls[1].split(":")[1].toInt())
     }
 
-    @Test fun backspaceDeletesTheSelectionElseOneCharacterBack() {
-        val none = FakeEditor(hasSelection = false)
-        Typist(none).apply(key(0xFF08, true))
-        assertEquals(listOf("finish", "back"), none.calls)
-
-        val selected = FakeEditor(hasSelection = true)
-        Typist(selected).apply(key(0xFF08, true))
-        assertEquals(listOf("finish", "commit:"), selected.calls)
+    @Test fun backspaceAndDeleteAreRealKeysTheFieldInterprets() {
+        val back = FakeEditor()
+        Typist(back).apply(key(0xFF08, true))
+        assertEquals(
+            listOf("finish", "key:${KeyEvent.KEYCODE_DEL}:down:0", "key:${KeyEvent.KEYCODE_DEL}:up:0"),
+            back.calls,
+        )
+        val forward = FakeEditor()
+        Typist(forward).apply(key(0xFFFF, true))
+        assertEquals(
+            listOf("finish", "key:${KeyEvent.KEYCODE_FORWARD_DEL}:down:0", "key:${KeyEvent.KEYCODE_FORWARD_DEL}:up:0"),
+            forward.calls,
+        )
     }
 
-    @Test fun deleteGoesForwardOrDeletesTheSelection() {
-        val none = FakeEditor()
-        Typist(none).apply(key(0xFFFF, true))
-        assertEquals(listOf("finish", "forward"), none.calls)
-        val selected = FakeEditor(hasSelection = true)
-        Typist(selected).apply(key(0xFFFF, true))
-        assertEquals(listOf("finish", "commit:"), selected.calls)
+    @Test fun deletionNeverCarriesAModifier() {
+        // Shift+Delete is Cut in a text view.
+        val editor = FakeEditor()
+        val typist = Typist(editor)
+        typist.apply(key(0xFFE1, true))
+        editor.calls.clear()
+        typist.apply(key(0xFFFF, true))
+        assertEquals(
+            listOf("finish", "key:${KeyEvent.KEYCODE_FORWARD_DEL}:down:0", "key:${KeyEvent.KEYCODE_FORWARD_DEL}:up:0"),
+            editor.calls,
+        )
     }
 
     @Test fun releasingBackspaceOrDeleteDoesNothing() {
@@ -89,23 +106,90 @@ class TypistTest {
         assertTrue(editor.calls.isEmpty())
     }
 
-    @Test fun modifiersAreCarriedByTheKeysPressedWhileTheyAreDown() {
+    @Test fun shiftIsCarriedByTheKeysPressedWhileItIsDown() {
         val editor = FakeEditor()
         val typist = Typist(editor)
-        typist.apply(key(0xFFE3, true))
+        typist.apply(key(0xFFE1, true))
         typist.apply(key('a'.code.toLong(), true))
         typist.apply(key('a'.code.toLong(), false))
-        typist.apply(key(0xFFE3, false))
-        val ctrl = KeyEvent.META_CTRL_ON or KeyEvent.META_CTRL_LEFT_ON
+        typist.apply(key(0xFFE1, false))
+        val shift = KeyEvent.META_SHIFT_ON or KeyEvent.META_SHIFT_LEFT_ON
         assertEquals(
             listOf(
-                "key:${KeyEvent.KEYCODE_CTRL_LEFT}:down:$ctrl",
-                "key:${KeyEvent.KEYCODE_A}:down:$ctrl",
-                "key:${KeyEvent.KEYCODE_A}:up:$ctrl",
-                "key:${KeyEvent.KEYCODE_CTRL_LEFT}:up:0",
+                "key:${KeyEvent.KEYCODE_SHIFT_LEFT}:down:$shift",
+                "key:${KeyEvent.KEYCODE_A}:down:$shift",
+                "key:${KeyEvent.KEYCODE_A}:up:$shift",
+                "key:${KeyEvent.KEYCODE_SHIFT_LEFT}:up:0",
             ),
             editor.calls,
         )
+    }
+
+    @Test fun aLetterWithCtrlAltMetaOrSuperIsDroppedAndNothingIsForwarded() {
+        // Ctrl+A/C/X/V would select, copy, cut and paste the phone's clipboard.
+        for (modifier in longArrayOf(0xFFE3, 0xFFE4, 0xFFE9, 0xFFEA, 0xFFE7, 0xFFE8, 0xFFEB, 0xFFEC)) {
+            val editor = FakeEditor()
+            val typist = Typist(editor)
+            assertTrue(typist.apply(key(modifier, true)))
+            for (letter in "acxv0 ") {
+                assertTrue(typist.apply(key(letter.code.toLong(), true)))
+                assertTrue(typist.apply(key(letter.code.toLong(), false)))
+            }
+            assertTrue(typist.apply(key(modifier, false)))
+            assertTrue("0x" + modifier.toString(16) + " " + editor.calls, editor.calls.isEmpty())
+        }
+    }
+
+    @Test fun keysThatAreNotPrintableStillWorkWithCtrlHeldWithoutItsMeta() {
+        val editor = FakeEditor()
+        val typist = Typist(editor)
+        typist.apply(key(0xFFE3, true))
+        typist.apply(key(0xFF51, true))
+        typist.apply(key(0xFF51, false))
+        assertEquals(
+            listOf("key:${KeyEvent.KEYCODE_DPAD_LEFT}:down:0", "key:${KeyEvent.KEYCODE_DPAD_LEFT}:up:0"),
+            editor.calls,
+        )
+    }
+
+    @Test fun lettersWorkAgainOnceTheChordModifierIsReleased() {
+        val editor = FakeEditor()
+        val typist = Typist(editor)
+        typist.apply(key(0xFFE3, true))
+        typist.apply(key(0xFFE3, false))
+        typist.apply(key('a'.code.toLong(), true))
+        assertEquals(listOf("key:${KeyEvent.KEYCODE_A}:down:0"), editor.calls)
+    }
+
+    @Test fun releaseAllForgetsAHeldCtrl() {
+        val editor = FakeEditor()
+        val typist = Typist(editor)
+        typist.apply(key(0xFFE3, true))
+        typist.releaseAll()
+        typist.apply(key('a'.code.toLong(), true))
+        assertEquals(listOf("key:${KeyEvent.KEYCODE_A}:down:0"), editor.calls)
+    }
+
+    @Test fun textIsStillTypedWhileCtrlIsHeld() {
+        val editor = FakeEditor()
+        val typist = Typist(editor)
+        typist.apply(key(0xFFE3, true))
+        typist.apply(TypingEvent.Text("v"))
+        assertEquals(listOf("finish", "commit:v"), editor.calls)
+    }
+
+    @Test fun saysWhetherTheFieldTookIt() {
+        val refusing = FakeEditor(accepts = false)
+        val typist = Typist(refusing)
+        assertFalse(typist.apply(TypingEvent.Text("a")))
+        assertFalse(typist.apply(key('a'.code.toLong(), true)))
+        assertFalse(typist.apply(key(0xFF08, true)))
+        assertFalse(typist.apply(key(0xFF0D, true)))
+        val enterAction = FakeEditor(enterAction = EditorInfo.IME_ACTION_SEND, accepts = false)
+        assertFalse(Typist(enterAction).apply(key(0xFF0D, true)))
+        val taking = FakeEditor()
+        assertTrue(Typist(taking).apply(TypingEvent.Text("a")))
+        assertTrue(Typist(taking).apply(key(0xFF08, true)))
     }
 
     @Test fun refusedKeysDoNothing() {

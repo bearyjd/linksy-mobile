@@ -158,8 +158,30 @@ void main() {
     node.events$.add(const SessionEnded('type-1'));
     await tester.pump();
     expect(c.typing, isEmpty);
-    await c.stopTyping('type-1');
-    expect(node.ended, ['type-1']);
+    await finish(tester, c);
+  });
+
+  testWidgets('turning the keyboard on says so once', (tester) async {
+    final (c, node) = await start(tester);
+    keyboard['enabled'] = true;
+    final before = node.told.length;
+    await c.setKeyboard(true);
+    expect(node.told.length - before, 1);
+    expect(node.told.last, contains('keyboard'));
+    await finish(tester, c);
+  });
+
+  testWidgets('turning it off stops the typing on the phone at once', (
+    tester,
+  ) async {
+    final (c, node) = await start(tester);
+    keyboard['enabled'] = true;
+    await c.setKeyboard(true);
+    calls.clear();
+    await c.setKeyboard(false);
+    // Android drops what is still queued, before anything else.
+    expect(calls.map((m) => m.method).first, 'stopTyping');
+    expect(node.told.last, isNot(contains('keyboard')));
     await finish(tester, c);
   });
 

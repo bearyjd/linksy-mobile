@@ -153,7 +153,7 @@ mod tests {
         )
         .await
         .expect("forward must return when closed");
-        assert!(rx.recv().await.is_none() || rx.try_recv().is_err());
+        assert!(rx.recv().await.is_none());
     }
 
     #[tokio::test]
