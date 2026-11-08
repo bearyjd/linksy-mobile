@@ -11,7 +11,7 @@ interface BridgeLink {
 
 enum class BridgeStatus { Stopped, Connecting, Active, Failed }
 
-enum class FailReason { Setup, NotPaired, AccessibilityOff, Unreachable, Protocol }
+enum class FailReason { Setup, NotPaired, AccessibilityOff, Unreachable, Protocol, TooManyKeys }
 
 interface BridgeListener {
     fun onStatus(status: BridgeStatus, reason: FailReason?)
@@ -79,6 +79,8 @@ class BridgeClient(
         if (state != State.Binding) return
         begin(renew = false)
     }
+
+    fun onUntrusted() {}
 
     fun onBindFailed() {
         if (state == State.Binding) retry()
@@ -244,6 +246,8 @@ class BridgeClient(
 
     companion object {
         const val QUEUE_MAX = 256
+
+        const val MAX_HELD_KEYS = 64
 
         /// Under the companion's own budget (1500/s sustained, burst 3000).
         const val RATE_PER_SEC = 1200

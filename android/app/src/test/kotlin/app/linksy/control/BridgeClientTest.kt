@@ -408,4 +408,100 @@ class BridgeClientTest {
         r.client.send(scroll())
         assertTrue(r.link.sent.isEmpty())
     }
+
+    // Review round 1.
+
+    @Test fun anUntrustedCompanionFailsForGoodWithoutBeginning() {
+        val r = Rig()
+        r.client.start()
+        r.client.onUntrusted()
+        assertEquals(BridgeStatus.Failed to FailReason.Setup, r.last)
+        assertEquals(listOf("bind", "unbind"), r.link.calls)
+        r.client.onBound()
+        assertEquals(1, r.link.count("bind"))
+        assertEquals(0, r.link.count("begin"))
+    }
+
+    @Test fun simultaneouslyHeldKeysAreCappedAndTheSessionEndsCleanly() {
+        val r = Rig()
+        r.active()
+        for (k in 1L..BridgeClient.MAX_HELD_KEYS.toLong()) r.client.send(ControlMsg.Key(k, true))
+        assertEquals(BridgeStatus.Active, r.status)
+        assertEquals(0, r.link.count("end"))
+        r.client.send(ControlMsg.Key(1000, true))
+        assertEquals(BridgeStatus.Failed to FailReason.TooManyKeys, r.last)
+        assertEquals(1, r.link.count("end"))
+        assertEquals("unbind", r.link.calls.last())
+        assertFalse(r.link.sent.contains(ControlMsg.Key(1000, true).toJson()))
+        for (k in 1L..BridgeClient.MAX_HELD_KEYS.toLong()) assertTrue(r.link.sent.contains(ControlMsg.Key(k, false).toJson()))
+        assertEquals("a bounded release burst", 2 * BridgeClient.MAX_HELD_KEYS, r.link.sent.size)
+        r.client.send(ControlMsg.Key(2000, true))
+        assertEquals(2 * BridgeClient.MAX_HELD_KEYS, r.link.sent.size)
+    }
+
+    @Test fun theSameKeyPressedAgainIsNotAnotherHeldKey() {
+        val r = Rig()
+        r.active()
+        repeat(500) { r.client.send(ControlMsg.Key(65, true)) }
+        assertEquals(BridgeStatus.Active, r.status)
+    }
+
+    @Test fun releasingKeysFreesRoomUnderTheCap() {
+        val r = Rig()
+        r.active()
+        for (k in 1L..BridgeClient.MAX_HELD_KEYS.toLong()) r.client.send(ControlMsg.Key(k, true))
+        r.client.send(ControlMsg.Key(1, false))
+        r.client.send(ControlMsg.Key(999, true))
+        assertEquals(BridgeStatus.Active, r.status)
+    }
+
+    @Test fun aKeyFloodAtTheWireRateStillEndsThereAndLogsOnce() {
+        val r = Rig()
+        r.active()
+        for (k in 1L..2000L) {
+            r.now += 1
+            r.client.send(ControlMsg.Key(k, true))
+        }
+        assertEquals(1, r.events.seen.count { it.first == BridgeStatus.Failed })
+        assertTrue(r.link.sent.size <= 2 * BridgeClient.MAX_HELD_KEYS)
+    }
+
+    @Test fun aReleaseIsNotDroppedWhenTheQueueIsFullOfReleases() {
+        val r = Rig()
+        r.client.start()
+        for (k in 1L..BridgeClient.QUEUE_MAX.toLong()) r.client.send(ControlMsg.Key(k, false))
+        r.client.send(ControlMsg.Button("left", false))
+        r.client.onBound()
+        r.client.onReply(0)
+        r.after(1_000)
+        assertTrue(r.link.sent.contains(ControlMsg.Button("left", false).toJson()))
+    }
+
+    @Test fun whenEvictingReleasesThoseOfHeldKeysAreKept() {
+        val r = Rig()
+        r.active()
+        r.client.send(ControlMsg.Key(7, true))
+        // Use up the burst so the queue builds.
+        repeat(BridgeClient.BURST - 1) { r.client.send(scroll()) }
+        r.client.send(ControlMsg.Key(7, false))
+        for (k in 100L until 100L + BridgeClient.QUEUE_MAX - 1) r.client.send(ControlMsg.Key(k, false))
+        r.client.send(ControlMsg.Button("left", false))
+        r.after(2_000)
+        assertTrue(r.link.sent.contains(ControlMsg.Key(7, false).toJson()))
+        assertTrue(r.link.sent.contains(ControlMsg.Button("left", false).toJson()))
+    }
+
+    @Test fun steadyInputFirstBeginsAgainNoLaterThanTheMaximum() {
+        val r = Rig()
+        r.active()
+        val start = r.now
+        var firstRenewal = -1L
+        while (r.now - start < BridgeClient.MAX_RENEW_MS + 60_000 && firstRenewal < 0) {
+            r.after(10_000)
+            r.client.send(scroll())
+            if (r.link.count("begin") > 1) firstRenewal = r.now - start
+        }
+        assertTrue("renewed", firstRenewal > 0)
+        assertTrue("at $firstRenewal", firstRenewal <= BridgeClient.MAX_RENEW_MS)
+    }
 }

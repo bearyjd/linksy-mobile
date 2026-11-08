@@ -102,4 +102,16 @@ class ControlMsgTest {
     @Test fun textNeverShowsInToString() {
         assertFalse(ControlMsg.Text("hunter2").toString().contains("hunter2"))
     }
+
+    @Test fun deepNestingIsRefusedWithoutOverflowingTheStack() {
+        assertNull(parse("[".repeat(100_000)))
+        assertNull(parse("""{"type":"pointer","x":0.5,"y":0.5,"z":""" + "[".repeat(100_000) + "}"))
+        assertNull(parse("""{"type":"text","text":"a","z":""" + "{\"a\":".repeat(50_000)))
+    }
+
+    @Test fun bracketsInsideTextAreStillText() {
+        val text = "[".repeat(50) + "{".repeat(50)
+        val json = org.json.JSONObject().put("type", "text").put("text", text).toString()
+        assertEquals(ControlMsg.Text(text), parse(json))
+    }
 }
