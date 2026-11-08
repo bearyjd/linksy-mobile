@@ -596,12 +596,22 @@ class MainActivity : FlutterActivity() {
                     "activeShares" -> result.success(ShareService.active.values.toList())
                     // A computer typing on this phone through the Linksy Keyboard.
                     "startTyping" -> {
-                        Typing.begin(this@MainActivity, call.argument<String>("session")!!, call.argument<String>("peer") ?: Lang.str(this@MainActivity, R.string.your_computer))
+                        val session = call.argument<String>("session")
+                        if (session.isNullOrEmpty()) {
+                            result.error("bad_args", "startTyping needs a session", null)
+                            return@setMethodCallHandler
+                        }
+                        Typing.begin(this@MainActivity, session, call.argument<String>("peer") ?: Lang.str(this@MainActivity, R.string.your_computer))
                         // Allowed just now, so Android lets this app ask which keyboard to use.
                         val state = Typing.state(this@MainActivity)
                         if (state["enabled"] == true && state["current"] != true) {
                             getSystemService(InputMethodManager::class.java).showInputMethodPicker()
                         }
+                        result.success(null)
+                    }
+                    // The card turned off: nothing already queued may be typed.
+                    "stopTyping" -> {
+                        Typing.stopAll()
                         result.success(null)
                     }
                     "keyboardState" -> result.success(Typing.state(this@MainActivity))

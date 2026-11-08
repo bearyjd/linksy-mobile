@@ -43,4 +43,7 @@
     <string name="keyboard_typing">%1$s tippt hier</string>
     <string name="keyboard_idle">Gerade tippt kein Computer</string>
     <string name="keyboard_switch">Tastatur wechseln</string>
+    <string name="keyboard_paused_password">Pausiert: Passwortfeld</string>
+    <string name="keyboard_unsupported">In dieses Feld kann der Computer nicht tippen</string>
+    <string name="keyboard_hint">Linksy Keyboard hat keine Tasten. Wechsle zu einer anderen Tastatur, um auf dem Telefon zu tippen.</string>
 </resources>

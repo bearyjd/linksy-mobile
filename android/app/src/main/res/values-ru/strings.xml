@@ -43,4 +43,7 @@
     <string name="keyboard_typing">%1$s вводит текст здесь</string>
     <string name="keyboard_idle">Сейчас ни один компьютер не вводит текст</string>
     <string name="keyboard_switch">Сменить клавиатуру</string>
+    <string name="keyboard_paused_password">Пауза: поле пароля</string>
+    <string name="keyboard_unsupported">Компьютер не может вводить текст в это поле</string>
+    <string name="keyboard_hint">У Linksy Keyboard нет клавиш. Переключитесь на другую клавиатуру, чтобы печатать на телефоне.</string>
 </resources>

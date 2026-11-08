@@ -43,4 +43,7 @@
     <string name="keyboard_typing">%1$s está digitando aqui</string>
     <string name="keyboard_idle">Nenhum computador está digitando agora</string>
     <string name="keyboard_switch">Trocar de teclado</string>
+    <string name="keyboard_paused_password">Em pausa: campo de senha</string>
+    <string name="keyboard_unsupported">O computador não pode digitar neste campo</string>
+    <string name="keyboard_hint">O Linksy Keyboard não tem teclas. Mude para outro teclado para digitar no telefone.</string>
 </resources>

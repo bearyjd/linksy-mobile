@@ -43,4 +43,7 @@
     <string name="keyboard_typing">%1$s sta scrivendo qui</string>
     <string name="keyboard_idle">Nessun computer sta scrivendo ora</string>
     <string name="keyboard_switch">Cambia tastiera</string>
+    <string name="keyboard_paused_password">In pausa: campo password</string>
+    <string name="keyboard_unsupported">Il computer non può scrivere in questo campo</string>
+    <string name="keyboard_hint">Linksy Keyboard non ha tasti. Passa a un\'altra tastiera per scrivere sul telefono.</string>
 </resources>

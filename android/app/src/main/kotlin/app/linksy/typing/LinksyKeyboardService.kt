@@ -15,16 +15,17 @@ import app.linksy.Lang
 import app.linksy.R
 
 /// The Linksy Keyboard: no keys of its own. A computer types on this phone
-/// through it (docs/protocol.md §4.26), into whichever field is open, while
-/// the user has it selected and a typing session runs. It never reads what
-/// is in the field or what the user types on the phone, and it is never the
-/// default: Android has the user pick it, and the user picks another to go back.
+/// through it (docs/protocol.md §4.26), into whichever text field is open,
+/// while the user has it selected and a typing session runs. It never reads
+/// what is in the field or what the user types on the phone. It is never the
+/// default: Android has the user pick it, and it switches back to the keyboard
+/// before as soon as the last session ends (or, if there is none to go back to,
+/// says so).
 class LinksyKeyboardService : InputMethodService() {
     private var typist: Typist? = null
     private var info: EditorInfo? = null
-    private var selStart = -1
-    private var selEnd = -1
     private var status: TextView? = null
+    private val pressTimes = PressTimes { SystemClock.uptimeMillis() }
 
     override fun onCreate() {
         super.onCreate()
@@ -33,7 +34,7 @@ class LinksyKeyboardService : InputMethodService() {
 
     override fun onDestroy() {
         releaseAll()
-        Typing.gate.keyboardLive(false)
+        Typing.gate.setField(FieldState.None)
         if (Typing.service === this) Typing.service = null
         super.onDestroy()
     }
@@ -64,33 +65,33 @@ class LinksyKeyboardService : InputMethodService() {
 
     override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
         super.onStartInput(attribute, restarting)
+        // A restart in the same field skips onFinishInput: let go of what the
+        // old Typist holds before it is replaced.
+        releaseAll()
         info = attribute
-        selStart = attribute?.initialSelStart ?: -1
-        selEnd = attribute?.initialSelEnd ?: -1
         typist = Typist(ConnectionEditor())
-        Typing.gate.keyboardLive(currentInputConnection != null)
+        Typing.field(
+            if (attribute == null) FieldState.None else FieldPolicy.of(attribute.inputType, currentInputConnection != null),
+        )
+    }
+
+    // Shown with nobody typing (picked by hand, or the lock screen's bouncer):
+    // it has no keys, so leave at once.
+    override fun onStartInputView(editorInfo: EditorInfo?, restarting: Boolean) {
+        super.onStartInputView(editorInfo, restarting)
+        Typing.leaveIfIdle(this)
     }
 
     override fun onFinishInput() {
         releaseAll()
         typist = null
         info = null
-        Typing.gate.keyboardLive(false)
+        Typing.field(FieldState.None)
         super.onFinishInput()
     }
 
-    // Only where the cursor and selection are, never the text.
-    override fun onUpdateSelection(
-        oldSelStart: Int, oldSelEnd: Int, newSelStart: Int, newSelEnd: Int, candidatesStart: Int, candidatesEnd: Int,
-    ) {
-        super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd)
-        selStart = newSelStart
-        selEnd = newSelEnd
-    }
-
-    fun type(event: TypingEvent) {
-        typist?.apply(event)
-    }
+    /// True if the field took it (or it was dropped on purpose).
+    fun type(event: TypingEvent): Boolean = typist?.apply(event) ?: false
 
     fun releaseAll() {
         typist?.releaseAll()
@@ -98,48 +99,42 @@ class LinksyKeyboardService : InputMethodService() {
 
     /// What the view says: who types, or that nothing does now.
     fun refresh() {
-        val who = Typing.who()
-        status?.text = if (who == null) Lang.str(this, R.string.keyboard_idle) else Lang.str(this, R.string.keyboard_typing, who)
+        status?.text = Typing.statusText(this)
+    }
+
+    /// Back to the keyboard the user had. False if Android would not.
+    fun leave(sdk: Int): Boolean {
+        if (sdk >= 28) return switchToPreviousInputMethod()
+        val token = window?.window?.attributes?.token ?: return false
+        @Suppress("DEPRECATION")
+        return getSystemService(InputMethodManager::class.java).switchToLastInputMethod(token)
     }
 
     /// Back to the keyboard the user had, or Android's picker.
     private fun switchKeyboard() {
-        if (Build.VERSION.SDK_INT >= 28 && switchToPreviousInputMethod()) return
+        if (leave(Build.VERSION.SDK_INT)) return
         getSystemService(InputMethodManager::class.java).showInputMethodPicker()
     }
 
     /// The open field, through the connection Android gave this keyboard.
     private inner class ConnectionEditor : Editor {
         private val connection: InputConnection? get() = currentInputConnection
-        private val downTime = SystemClock.uptimeMillis()
 
         override val multiLine get() = EnterAction.isMultiLine(info?.inputType ?: 0)
-        override val hasSelection get() = selStart >= 0 && selEnd >= 0 && selStart != selEnd
         override val enterAction get() = EnterAction.of(info?.imeOptions ?: 0)
 
         override fun finishComposingText() {
             connection?.finishComposingText()
         }
 
-        override fun commitText(text: String) {
-            connection?.commitText(text, 1)
-        }
+        override fun commitText(text: String) = connection?.commitText(text, 1) ?: false
 
-        override fun deleteBackward() {
-            connection?.deleteSurroundingTextInCodePoints(1, 0)
-        }
+        override fun performEditorAction(action: Int) = connection?.performEditorAction(action) ?: false
 
-        override fun deleteForward() {
-            connection?.deleteSurroundingTextInCodePoints(0, 1)
-        }
-
-        override fun performEditorAction(action: Int) {
-            connection?.performEditorAction(action)
-        }
-
-        override fun key(code: Int, down: Boolean, meta: Int) {
+        override fun key(code: Int, down: Boolean, meta: Int): Boolean {
             val action = if (down) KeyEvent.ACTION_DOWN else KeyEvent.ACTION_UP
-            connection?.sendKeyEvent(KeyEvent(downTime, SystemClock.uptimeMillis(), action, code, 0, meta))
+            val event = KeyEvent(pressTimes.downTime(code, down), SystemClock.uptimeMillis(), action, code, 0, meta)
+            return connection?.sendKeyEvent(event) ?: false
         }
     }
 }

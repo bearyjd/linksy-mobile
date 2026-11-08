@@ -43,4 +43,7 @@
     <string name="keyboard_typing">Manoratra eto i %1$s</string>
     <string name="keyboard_idle">Tsy misy solosaina manoratra izao</string>
     <string name="keyboard_switch">Ovay ny fitendry</string>
+    <string name="keyboard_paused_password">Najanona: efitra tenimiafina</string>
+    <string name="keyboard_unsupported">Tsy afaka manoratra amin\'ity efitra ity ny solosaina</string>
+    <string name="keyboard_hint">Tsy misy fanalahidy ny Linksy Keyboard. Mifidiana fitendry hafa raha hanoratra amin\'ny findainao.</string>
 </resources>
