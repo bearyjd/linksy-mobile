@@ -11,6 +11,7 @@ import '../../core/models.dart';
 import '../../ui/components.dart';
 import '../../ui/l10n.dart';
 import '../../ui/sig.dart';
+import '../device/page_switcher.dart';
 import 'deck_editor.dart';
 import 'laid_deck.dart';
 
@@ -41,6 +42,9 @@ class _DeckScreenState extends State<DeckScreen> with WidgetsBindingObserver {
   Timer? _idle;
   bool _dim = false;
 
+  /// The bars hidden (Full screen in the theme sheet).
+  bool _full = false;
+
   /// A computer that offers actions but sends no layouts: its deck is laid
   /// out here, once it's had a moment to send them.
   Timer? _grace;
@@ -65,6 +69,8 @@ class _DeckScreenState extends State<DeckScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _show(false);
     _c.unwatchMedia(_id);
+    _c.volumeKeysFor(this, null);
+    if (_full) LinksyPlatform.edgeToEdge();
     _idle?.cancel();
     _grace?.cancel();
     // The screen is the phone's again.
@@ -129,11 +135,27 @@ class _DeckScreenState extends State<DeckScreen> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final c = LinksyScope.of(context);
     final connected = c.device(_id)?.connected ?? false;
+    // Full screen, as picked in the theme sheet (mobile#21), while in front.
+    final full =
+        c.deckFullScreen && (ModalRoute.of(context)?.isCurrent ?? false);
+    if (full != _full) {
+      _full = full;
+      full
+          ? SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky)
+          : LinksyPlatform.edgeToEdge();
+    }
+    // In front with the computer's volume: the phone's keys step it (§7).
+    final front = ModalRoute.of(context)?.isCurrent ?? false;
+    final stepping = front && c.volume[_id] != null;
+    scheduleMicrotask(() {
+      if (mounted) _c.volumeKeysFor(this, stepping ? _id : null);
+    });
     // Connected again: the computer needs telling the deck shows.
     if (connected && !_connected && _open) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _c.openDeck(_id));
     }
     _connected = connected;
+    final live = c.deckLive(_id);
     final layouts = c.deckLayouts(_id);
     final actions = c.deckActions[_id];
     if (layouts == null && actions != null && _grace == null) {
@@ -143,13 +165,9 @@ class _DeckScreenState extends State<DeckScreen> with WidgetsBindingObserver {
     }
     final Widget deck;
     if (layouts != null) {
-      deck = LaidDeck(
-        device: widget.device,
-        layouts: layouts,
-        connected: connected,
-      );
+      deck = LaidDeck(device: widget.device, layouts: layouts, live: live);
     } else {
-      deck = _ownDeck(context, connected, waiting: connected && !_waited);
+      deck = _ownDeck(context, live, waiting: live && !_waited);
     }
     return Listener(
       onPointerDown: (_) {
@@ -174,11 +192,7 @@ class _DeckScreenState extends State<DeckScreen> with WidgetsBindingObserver {
   }
 
   /// The deck laid out on the phone, for a computer that sends no layouts.
-  Widget _ownDeck(
-    BuildContext context,
-    bool connected, {
-    required bool waiting,
-  }) {
+  Widget _ownDeck(BuildContext context, bool live, {required bool waiting}) {
     final s = Sig.of(context);
     final c = LinksyScope.of(context);
     final l = context.l10n;
@@ -191,8 +205,8 @@ class _DeckScreenState extends State<DeckScreen> with WidgetsBindingObserver {
     Widget body;
     if (layout == null || pages.isEmpty) {
       body = _Message(
-        busy: connected && (actions == null || waiting),
-        text: !connected
+        busy: live && (actions == null || waiting),
+        text: !live
             ? l.deckAway(name)
             : actions == null || waiting
             ? l.deckAsking(name)
@@ -212,7 +226,7 @@ class _DeckScreenState extends State<DeckScreen> with WidgetsBindingObserver {
                 actions: actions,
                 states: c.deckStates[_id] ?? const {},
                 editing: _editing,
-                enabled: connected,
+                enabled: live,
                 onChanged: () => _edit((_) {}),
                 onTileEdit: (t) => _editTile(pages[i], t),
                 onAdd: () => _addTile(pages[i]),
@@ -309,6 +323,8 @@ class _DeckScreenState extends State<DeckScreen> with WidgetsBindingObserver {
                           : Sig.blue.withValues(alpha: 0.1),
                       onTap: () => openDeckEditor(context, widget.device),
                     ),
+                  const SizedBox(width: 8),
+                  PageSwitchButton(deviceId: _id, current: DevicePage.deck),
                 ],
               ),
               const SizedBox(height: 16),

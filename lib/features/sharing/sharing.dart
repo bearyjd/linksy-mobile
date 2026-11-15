@@ -37,7 +37,7 @@ class SessionRequestDialog extends StatelessWidget {
         l.sharingCameraRequestTitle(name),
         l.sharingCameraRequestDetail(name),
       ),
-      // A computer typing on this phone, through Linksy Keyboard (§4.26).
+      // A computer typing on this phone, through Linksy Keyboard (§4.27).
       SessionKind.input => (
         Ph.keyboard,
         l.sharingTypeRequestTitle(name),

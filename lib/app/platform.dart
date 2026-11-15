@@ -54,10 +54,12 @@ abstract final class LinksyPlatform {
   static final _usbPorts = StreamController<int>.broadcast();
   static final _controlsChanges = StreamController<void>.broadcast();
   static final _screenRotations = StreamController<(String, int)>.broadcast();
-  static final _networkChanges = StreamController<void>.broadcast();
+  static final _networkChanges =
+      StreamController<Map<String, Object?>>.broadcast();
 
-  /// This phone's networks changed (at most once a second).
-  static Stream<void> get networkChanges {
+  /// What this phone's networks are, when they may have changed (at most once
+  /// a second); `NetworkState` says whether anything a link uses did.
+  static Stream<Map<String, Object?>> get networkChanges {
     _listen();
     return _networkChanges.stream;
   }
@@ -67,6 +69,12 @@ abstract final class LinksyPlatform {
   static final _turnOnAsks = StreamController<void>.broadcast();
   static final _appInstalls = StreamController<(String?, String)>.broadcast();
   static var _listening = false;
+
+  /// Content under the status and navigation bars. Nothing answers with no
+  /// window (Linksy started with the phone): the app asks again once shown.
+  static void edgeToEdge() =>
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge)
+          .catchError((Object _) {});
 
   /// Calls from Android: pairing links, second-display size and end, and
   /// the QR scanner's results.
@@ -117,11 +125,15 @@ abstract final class LinksyPlatform {
           _openWebcam.add(call.arguments as String);
         case 'turnOn':
           _turnOnAsks.add(null);
+        case 'shown':
+          // The app opened on Linksy started with the phone, which had no
+          // window to lay out edge to edge.
+          edgeToEdge();
         case 'appInstall' when call.arguments is Map:
           final a = call.arguments as Map;
           _appInstalls.add((a['package'] as String?, a['status'] as String));
-        case 'networkChanged':
-          _networkChanges.add(null);
+        case 'networkChanged' when call.arguments is Map:
+          _networkChanges.add((call.arguments as Map).cast<String, Object?>());
         case 'directStep' when call.arguments is Map:
           final a = (call.arguments as Map).cast<String, Object?>();
           final device = a.remove('device');
@@ -458,6 +470,9 @@ abstract final class LinksyPlatform {
   /// Whether this phone can host a direct link (Wi-Fi Direct, Android 10+).
   static Future<Map<String, String>> deviceReport() async =>
       (await _call<Map>('deviceReport'))?.cast<String, String>() ?? {};
+
+  /// What Linksy takes of the phone's memory, as one line for the log.
+  static Future<String?> memory() => _call<String>('memory');
 
   static Future<bool> directHost() async =>
       await _call<bool>('directHost') ?? false;

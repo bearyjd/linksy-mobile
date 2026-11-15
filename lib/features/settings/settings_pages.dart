@@ -178,6 +178,13 @@ List<SettingsHit> settingsIndex(BuildContext context) {
       l.settingsReverseScroll,
       [l.settingsReverseScrollCaption],
     ),
+    SettingsHit(
+      'speed',
+      SettingsArea.computers,
+      Ph.cursorClick,
+      l.settingsPointerSpeed,
+      [l.settingsPointerSpeedCaption],
+    ),
     SettingsHit('locate', SettingsArea.computers, Ph.mapPin, l.settingsLocate, [
       l.settingsLocateCaption,
     ]),
@@ -576,6 +583,16 @@ class ConnectionSettings extends StatelessWidget {
               ),
             ),
             SettingRow(
+              id: 'boot',
+              icon: Ph.arrowCounterClockwise,
+              title: l.settingsStartAtBoot,
+              caption: l.settingsStartAtBootCaption,
+              trailing: Switch(
+                value: c.startAtBoot,
+                onChanged: c.setStartAtBoot,
+              ),
+            ),
+            SettingRow(
               id: 'doctor',
               icon: Ph.wifiHigh,
               title: l.doctorTitle,
@@ -881,6 +898,25 @@ class ComputersSettings extends StatelessWidget {
               trailing: Switch(
                 value: c.scrollReversed,
                 onChanged: c.setScrollReversed,
+              ),
+            ),
+            SettingRow(
+              id: 'speed',
+              icon: Ph.cursorClick,
+              // The value up front: the caption may be cut short.
+              title:
+                  '${l.settingsPointerSpeed} · '
+                  '${c.pointerSpeed.toStringAsFixed(2).replaceFirst(RegExp(r'\.?0+$'), '')}×',
+              caption: l.settingsPointerSpeedCaption,
+              trailing: SizedBox(
+                width: 128,
+                child: Slider(
+                  value: c.pointerSpeed,
+                  min: 0.5,
+                  max: 2,
+                  divisions: 6,
+                  onChanged: c.setPointerSpeed,
+                ),
               ),
             ),
             SettingRow(

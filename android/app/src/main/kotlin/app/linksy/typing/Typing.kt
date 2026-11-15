@@ -20,7 +20,7 @@ import app.linksy.MainActivity
 import app.linksy.R
 import app.linksy.media.NativeSession
 
-/// A computer typing on this phone (docs/protocol.md §4.26): reads what the
+/// A computer typing on this phone (docs/protocol.md §4.27): reads what the
 /// Rust side hands over (rust/src/keyboard.rs) and gives it to the Linksy
 /// Keyboard, but only while a session runs and that keyboard is the one in
 /// use. Ends the session when the screen turns off or the user switches to

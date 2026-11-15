@@ -137,7 +137,7 @@ fn add_incoming(id: &str, peer: linksy_core::Fingerprint) -> (mpsc::Sender<Vec<u
     (arrived, closed)
 }
 
-/// An accepted `input` session on this phone: a computer typing (§4.26). Held
+/// An accepted `input` session on this phone: a computer typing (§4.27). Held
 /// until the typing ends, the user stops it or the keyboard is turned off.
 fn run_typing(typing: linksy_core::keyboard::KeyboardInput) {
     let id = typing.id.to_string();

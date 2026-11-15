@@ -16,7 +16,7 @@ import app.linksy.Lang
 import app.linksy.R
 
 /// The Linksy Keyboard: no keys of its own. A computer types on this phone
-/// through it (docs/protocol.md §4.26), into whichever text field is open,
+/// through it (docs/protocol.md §4.27), into whichever text field is open,
 /// while the user has it selected and a typing session runs. It never reads
 /// what is in the field or what the user types on the phone. It is never the
 /// default: Android has the user pick it, and it switches back to the keyboard

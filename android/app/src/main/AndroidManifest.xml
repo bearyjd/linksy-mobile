@@ -47,6 +47,9 @@
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     <!-- "Ring my phone" also vibrates. -->
     <uses-permission android:name="android.permission.VIBRATE"/>
+    <!-- Start When the Phone Starts (mobile#23): back in the background after a
+         restart, so computers see the phone without opening the app. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <application
         android:label="Linksy"
@@ -168,7 +171,7 @@
             android:name=".KeepAlive"
             android:exported="false"
             android:foregroundServiceType="connectedDevice"/>
-        <!-- The Linksy Keyboard: a computer types on this phone through it (docs/protocol.md §4.26). -->
+        <!-- The Linksy Keyboard: a computer types on this phone through it (docs/protocol.md §4.27). -->
         <service
             android:name=".typing.LinksyKeyboardService"
             android:exported="true"
@@ -183,6 +186,16 @@
         <receiver
             android:name=".typing.Typing$Stop"
             android:exported="false"/>
+        <!-- Starts KeepAlive (connectedDevice, allowed from boot on Android 15),
+             never the app's screen. -->
+        <receiver
+            android:name=".Boot"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
+            </intent-filter>
+        </receiver>
         <!-- Accept / Decline on the incoming-files notification. -->
         <receiver
             android:name=".TransferNotice$Answer"

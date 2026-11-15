@@ -20,7 +20,9 @@ import 'app_update.dart';
 import '../ui/format.dart';
 import '../ui/l10n.dart';
 import 'activity.dart';
+import 'network_state.dart';
 import 'platform.dart';
+import 'resume.dart';
 import 'terminals.dart';
 
 /// The Inbox is on by default since 0.3.4; until then the switch was off
@@ -331,16 +333,6 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
     DeviceInfo from,
     Map<String, Object?> change,
   ) async {
-    final view = device(from.id);
-    // Not among what's always allowed from away (§4.13).
-    if ((view?.away ?? false) && !(view?.awayAll ?? false)) {
-      for (final what in change.keys) {
-        await node
-            .refuseControls(from.id, what, 'away')
-            .catchError((Object _) {});
-      }
-      return;
-    }
     final refused = await LinksyPlatform.controlsSet(change);
     for (final MapEntry(key: what, value: why) in refused.entries) {
       await node
@@ -373,7 +365,7 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
-  /// Computers may type on this phone (§4.26): the user's switch, and Linksy
+  /// Computers may type on this phone (§4.27): the user's switch, and Linksy
   /// Keyboard turned on in Android's settings.
   bool get keyboardOn => prefs['keyboard'] == 'on';
 
@@ -497,6 +489,27 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
   /// The service says this app is too old to keep connecting.
   bool get outdated => serviceInfo?.outdated ?? false;
   bool get stayRunning => prefs['stay_running'] == 'on';
+
+  /// Start When the Phone Starts (mobile#23): the user's choice, else on once
+  /// a computer is paired. Android reads both prefs at boot (Boot.kt).
+  bool get startAtBoot => switch (prefs['start_at_boot']) {
+    'on' => true,
+    'off' => false,
+    _ => _hasComputer,
+  };
+
+  bool get _hasComputer =>
+      devices.any((v) => v.trusted && _isComputer(v.device));
+
+  Future<void> setStartAtBoot(bool on) =>
+      _setPref('start_at_boot', on ? 'on' : 'off');
+
+  /// Keeps Android's copy of "a computer is paired" for the boot default.
+  void _noteComputer() {
+    final has = _hasComputer ? 'yes' : null;
+    if (prefs['has_computer'] != has) unawaited(_setPref('has_computer', has));
+  }
+
   bool get sharingFiles => prefs['share_files'] == 'on';
   bool backsUpPhotos(String id) => prefs['photos.$id'] == 'on';
   bool photosDeclined(String id) => prefs['photos_declined.$id'] == '1';
@@ -552,8 +565,13 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
       (a) => respond(a.$1, accept: a.$2),
     );
     // Wi-Fi came or went, mobile data took over: the core checks its links.
-    _networkSub = LinksyPlatform.networkChanges.listen((_) {
-      log.add('Networks changed');
+    // Only then: it drops the ones that don't answer within 2 s, and Android
+    // reports much that no link notices (NetworkState).
+    _networkSub = LinksyPlatform.networkChanges.listen((snapshot) {
+      final what = networks.update(snapshot);
+      if (what == null) return;
+      log.add('Networks changed: $what');
+      _endLeftRemotes();
       node.networkChanged();
     });
     // The Wi-Fi part of a direct link did a step: the other device hears it,
@@ -568,6 +586,8 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
           'inviting${step['name'] != null ? ' as ${step['name']}' : ''}',
         'connecting' => 'connecting to it',
         'up' => 'link up, this phone at ${step['ip']}',
+        'joining' when step['wifi'] != null =>
+          "joining its group, this phone's Wi-Fi at ${step['wifi']} MHz",
         'joining' => 'joining its group',
         'joined' => 'in its group, this phone at ${step['ip']}',
         'end' => 'gave up: ${step['reason']}',
@@ -627,8 +647,8 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
     unawaited(
       LinksyPlatform.battery().then((b) {
         _battery ??= b;
-        for (final v in devices) {
-          if (v.connected || v.nearby) _tellBattery(v.device.id, always: true);
+        for (final id in _computers) {
+          _tellBattery(id, always: true);
         }
       }),
     );
@@ -682,6 +702,8 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
           paths,
           i == 0 ? apps : const [],
         );
+        // Apps aren't offered again: their folders are named for the offer.
+        if (i > 0 || apps.isEmpty) _sends[transfer] = (deviceId, paths);
         if (_activity.every((a) => a.id != transfer)) {
           _add(
             Activity(
@@ -826,6 +848,7 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      _watchMemory(idle: false);
       _importAll();
       unawaited(_sendCopied());
       unawaited(_readCamera());
@@ -841,6 +864,8 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
       // Back from Developer options, maybe.
       _readShareProtections();
     } else if (state == AppLifecycleState.hidden) {
+      _endLeftRemotes();
+      _watchMemory(idle: true);
       // Out of sight: decoded pictures go, they're read again on return.
       PaintingBinding.instance.imageCache
         ..clear()
@@ -848,10 +873,36 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
+  /// Idle memory (mobile#3) in the log: a minute after Linksy leaves the
+  /// screen, or starts without one (with the phone), then every half hour
+  /// until it's back. The log people share then says what it took.
+  Timer? _memoryTimer;
+
+  void _watchMemory({required bool idle}) {
+    _memoryTimer?.cancel();
+    _memoryTimer = null;
+    if (!idle) return;
+    _memoryTimer = Timer(const Duration(minutes: 1), () {
+      unawaited(_logMemory());
+      _memoryTimer = Timer.periodic(
+        const Duration(minutes: 30),
+        (_) => unawaited(_logMemory()),
+      );
+    });
+  }
+
+  Future<void> _logMemory() async {
+    final line = await LinksyPlatform.memory().catchError((Object _) => null);
+    if (line != null) log.add('Memory, idle: $line');
+  }
+
   /// Android-side settings and folders; not awaited by [start] (tests have
   /// no Android side).
   Future<void> _loadPlatform() async {
     prefs = await LinksyPlatform.prefs();
+    _noteComputer();
+    // Started with the phone: no screen, so idle from the start.
+    if (Platform.isAndroid && !_onScreen) _watchMemory(idle: true);
     locale.value = resolveLocale(languageCode);
     useLocale(locale.value);
     themeMode.value = themeFrom(prefs['theme']);
@@ -1377,10 +1428,19 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
         final (name, total, since) =
             _logged.remove(transfer) ?? ('?', 0, DateTime.now());
         final s = DateTime.now().difference(since).inMilliseconds / 1000;
-        final speed = s > 0 && total > 0
+        // Carried on: some of it came before, or was there already.
+        final speed = _resumeTries.containsKey(transfer)
+            ? ', carried on'
+            : s > 0 && total > 0
             ? ', ${formatBytes(total ~/ s)}/s'
             : '';
         log.add('Transfer with $name done in ${s.toStringAsFixed(1)} s$speed');
+      case TransferFailed(:final transfer, :final reason)
+          when _canResume(transfer, reason):
+        final name = _logged.remove(transfer)?.$1 ?? '?';
+        log.add(
+          'Transfer with $name interrupted ($reason), continuing once it\'s back',
+        );
       case TransferFailed(:final transfer, :final reason):
         final name = _logged.remove(transfer)?.$1 ?? '?';
         log.add('Transfer with $name failed: $reason');
@@ -1438,6 +1498,14 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
   Future<void> setScrollReversed(bool on) =>
       _setPref('scroll_reverse', on ? 'on' : null);
 
+  /// How far the pointer goes for the same swipe on the touchpad, 0.5–2×.
+  double get pointerSpeed =>
+      (double.tryParse(prefs['pointer_speed'] ?? '') ?? 1).clamp(0.5, 2.0);
+  Future<void> setPointerSpeed(double speed) => _setPref(
+    'pointer_speed',
+    (speed - 1).abs() < 0.01 ? null : speed.toStringAsFixed(2),
+  );
+
   /// The number pad on the presentation remote.
   bool get slidesNumpad => prefs['slides_numpad'] == 'on';
   Future<void> setSlidesNumpad(bool on) =>
@@ -1450,10 +1518,8 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
 
   void _onCall(String state) {
     if (!pauseOnCalls) return;
-    for (final v in devices) {
-      if (v.trusted && _isComputer(v.device) && (v.connected || v.nearby)) {
-        node.sendCallState(v.device.id, state).catchError((Object _) {});
-      }
+    for (final id in _computers) {
+      _dialing(id, () => node.sendCallState(id, state));
     }
   }
 
@@ -1650,26 +1716,17 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
     return gallery;
   }
 
-  /// The computers that get them: paired and around.
-  Iterable<String> get _noticeTargets => [
-    for (final v in devices)
-      if (v.trusted && _isComputer(v.device) && (v.connected || v.nearby))
-        v.device.id,
-  ];
-
   void _onPhoneNotification(Map<String, Object?> n) {
     if (!mirroring) return;
-    for (final id in _noticeTargets) {
-      node.postNotification(id, n).catchError((Object _) {});
+    for (final id in _computers) {
+      _dialing(id, () => node.postNotification(id, n));
     }
   }
 
   void _onPhoneNotificationGone((String, bool) gone) {
     final (key, kept) = gone;
-    for (final id in _noticeTargets) {
-      node
-          .removeNotification(id, key, replyKept: kept)
-          .catchError((Object _) {});
+    for (final id in _computers) {
+      _dialing(id, () => node.removeNotification(id, key, replyKept: kept));
     }
   }
 
@@ -1791,6 +1848,109 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
     return _run(() => node.setVolume(id, level: level, muted: muted));
   }
 
+  /// What each player tells about where it is, on the Logs page when that
+  /// changes: a bar that stays empty is a missing position or length.
+  final Map<String, String> _playerFacts = {};
+
+  void _logPlayers(DeviceInfo from, MediaState state) {
+    for (final p in state.players) {
+      final facts =
+          '${p.playing ? 'playing' : 'paused'}, '
+          'position ${p.positionMs == null ? 'none' : '${p.positionMs! ~/ 1000} s'}, '
+          'length ${p.lengthMs == null ? 'none' : '${p.lengthMs! ~/ 1000} s'}';
+      final key = '${from.id}/${p.id}';
+      final shape = facts.replaceAll(RegExp(r'\d+ s'), 'n');
+      if (_playerFacts[key] == shape) continue;
+      _playerFacts[key] = shape;
+      log.add('Player ${p.app} on ${from.name}: $facts');
+    }
+  }
+
+  /// The player [id]'s deck and media notice control: the one picked on the
+  /// deck while it's there (ids are stable, desktop 0.13.2), else the one
+  /// playing, else the first (mobile#21).
+  MediaPlayer? playerFor(String id) {
+    final players = media[id]?.players ?? const <MediaPlayer>[];
+    final picked = prefs['player.$id'];
+    return players.where((p) => p.id == picked).firstOrNull ??
+        players.where((p) => p.playing).firstOrNull ??
+        players.firstOrNull;
+  }
+
+  Future<void> pickPlayer(String id, String player) =>
+      _setPref('player.$id', player);
+
+  /// The deck over the whole screen, without the status and navigation
+  /// bars (mobile#21).
+  bool get deckFullScreen => prefs['deck_full'] == 'on';
+  Future<void> setDeckFullScreen(bool on) =>
+      _setPref('deck_full', on ? 'on' : null);
+
+  /// Covers as they are, not drawn in the theme's dots or pixels.
+  bool get deckRealCovers => prefs['deck_real_art'] == 'on';
+  Future<void> setDeckRealCovers(bool on) =>
+      _setPref('deck_real_art', on ? 'on' : null);
+
+  /// Pages showing a computer's volume, in front: the phone's volume keys
+  /// step it there (5 % a press) instead of the phone's own (§7).
+  final Map<Object, String> _volumeKeys = {};
+  StreamSubscription<bool>? _volumeKeySub;
+
+  /// [owner] (a page) shows [id]'s volume in front, or no longer (null).
+  void volumeKeysFor(Object owner, String? id) {
+    if (id == null) {
+      _volumeKeys.remove(owner);
+    } else {
+      _volumeKeys[owner] = id;
+    }
+    final on = _volumeKeys.isNotEmpty;
+    if (on == (_volumeKeySub != null)) return;
+    LinksyPlatform.volumeSteps(on);
+    _volumeKeySub?.cancel();
+    _volumeKeySub = on
+        ? LinksyPlatform.volumeKeys.listen((up) {
+            if (_volumeKeys.isNotEmpty) stepVolume(_volumeKeys.values.last, up);
+          })
+        : null;
+  }
+
+  /// A volume key's press: shown at once, sent at most ten times a second
+  /// (a held key repeats faster), the newest level last.
+  void stepVolume(String id, bool up) {
+    final v = volume[id];
+    if (v == null) return;
+    final unmute = up && v.muted;
+    volume[id] = VolumeState(
+      seq: v.seq,
+      level: (v.level + (up ? 0.05 : -0.05)).clamp(0.0, 1.0),
+      muted: unmute ? false : v.muted,
+    );
+    if (unmute) _unmuting.add(id);
+    notifyListeners();
+    if (_volumeCooling.containsKey(id)) {
+      _volumeDirty.add(id);
+      return;
+    }
+    _sendVolume(id);
+  }
+
+  final Map<String, Timer> _volumeCooling = {};
+  final Set<String> _volumeDirty = {};
+  final Set<String> _unmuting = {};
+
+  void _sendVolume(String id) {
+    final v = volume[id];
+    if (v == null) return;
+    final unmute = _unmuting.remove(id);
+    node
+        .setVolume(id, level: v.level, muted: unmute ? false : null)
+        .catchError((Object _) {});
+    _volumeCooling[id] = Timer(const Duration(milliseconds: 100), () {
+      _volumeCooling.remove(id);
+      if (_volumeDirty.remove(id)) _sendVolume(id);
+    });
+  }
+
   /// `play_pause`, `next`, `previous`, or `seek` to [positionMs].
   Future<String?> mediaCommand(
     String id,
@@ -1885,12 +2045,46 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
   // Remote (§4.8, `input`): this phone as the computer's touchpad and
   // keyboard.
 
-  /// Asks the computer (its user allows it there); null when it's on.
-  Future<String?> startRemote(String id) => _run(() async {
-    final session = await node.startInput(id);
-    remotes[id] = session;
-    notifyListeners();
-  });
+  /// Asks the computer (its user allows it there); null when it's on. One
+  /// still open from a moment ago is used again, with no new request, so the
+  /// computer doesn't announce it again (Discussion #79).
+  Future<String?> startRemote(String id) async {
+    _remoteGrace.remove(id)?.cancel();
+    if (remotes.containsKey(id)) return null;
+    return _run(() async {
+      final session = await node.startInput(id);
+      remotes[id] = session;
+      notifyListeners();
+    });
+  }
+
+  /// This phone's networks, as last reported.
+  final networks = NetworkState();
+
+  /// How long a remote stays open once its page is left: Deck, Media or
+  /// Terminal and back shouldn't ask the computer again.
+  static const remoteGrace = Duration(seconds: 60);
+
+  /// Remotes left a moment ago, ending unless their page comes back.
+  final Map<String, Timer> _remoteGrace = {};
+
+  /// The remote's page went away: ends it after [remoteGrace].
+  void leaveRemote(String id) {
+    if (!remotes.containsKey(id)) return;
+    _remoteGrace.remove(id)?.cancel();
+    _remoteGrace[id] = Timer(remoteGrace, () {
+      _remoteGrace.remove(id);
+      stopRemote(id);
+    });
+  }
+
+  /// Ends the remotes nobody's on: Linksy went to the background, the
+  /// screen locked, the network changed.
+  void _endLeftRemotes() {
+    for (final id in _remoteGrace.keys.toList()) {
+      stopRemote(id);
+    }
+  }
 
   /// Input messages (`pointer_by`, `button`, `scroll`, `key`, `text`), each
   /// framed as u32 big-endian length + JSON. False once the computer ended it.
@@ -1908,6 +2102,7 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> stopRemote(String id) async {
+    _remoteGrace.remove(id)?.cancel();
     final session = remotes.remove(id);
     notifyListeners();
     if (session != null) await node.endSession(session);
@@ -2002,10 +2197,41 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
   bool _isComputer(DeviceInfo d) =>
       d.kind == DeviceKind.desktop || d.kind == DeviceKind.laptop;
 
+  // Sends connect first, on the network or from away, so they don't wait for
+  // a link (§4.13). One that can't be dialed is left alone for a minute.
+
+  final Map<String, DateTime> _undialable = {};
+
+  bool _resting(String id) => _undialable[id]?.isAfter(DateTime.now()) ?? false;
+
+  /// The paired computers worth a message now.
+  Iterable<String> get _computers => [
+    for (final v in devices)
+      if (v.trusted &&
+          _isComputer(v.device) &&
+          (v.connected || !_resting(v.device.id)))
+        v.device.id,
+  ];
+
+  /// Runs [send] to computer [id]; whether it went.
+  Future<bool> _dialing(String id, Future<void> Function() send) async {
+    try {
+      await send();
+      _undialable.remove(id);
+      return true;
+    } on Object {
+      if (device(id)?.connected != true) {
+        _undialable[id] = DateTime.now().add(const Duration(seconds: 60));
+        notifyListeners();
+      }
+      return false;
+    }
+  }
+
   void _onBattery(Battery b) {
     _battery = b;
-    for (final v in devices) {
-      if (v.trusted && (v.connected || v.nearby)) _tellBattery(v.device.id);
+    for (final id in _computers) {
+      _tellBattery(id);
     }
   }
 
@@ -2021,20 +2247,288 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
       return;
     }
     _toldBattery[id] = b;
-    try {
-      await node.sendBattery(id, b);
-    } on LinksyException {
-      // Not around after all: say it again next time it connects.
+    // Not around after all: say it again next time it connects.
+    if (!await _dialing(id, () => node.sendBattery(id, b))) {
       _toldBattery.remove(id);
     }
   }
 
   Future<void> refresh() async {
     devices = await node.devices();
+    _noteComputer();
     notifyListeners();
   }
 
-  void _onEvent(LinksyEvent e) {
+  // Transfers cut off with their connection carry on (resume.dart).
+
+  /// Files each transfer offered, in order, as the core listed them.
+  final _offeredFiles = <String, List<OfferedFile>>{};
+
+  /// Sender: who files went to, and what was picked, to offer again.
+  final _sends = <String, (String, List<String>)>{};
+
+  /// Sender: transfers waiting to be offered again, and how often they were.
+  final _resuming = <String>{};
+  final _resumeTries = <String, int>{};
+
+  /// A transfer that carries on another: the one it continues, and the bytes
+  /// that one had before the files offered again.
+  final _aliasOf = <String, (String, int)>{};
+
+  /// The transfer carrying on each one, while it runs.
+  final _resumedAs = <String, String>{};
+
+  /// Sender: offered again but not answered yet, by device: events can come
+  /// before the offer returns its id.
+  final _resendingTo = <String, (String, int)>{};
+
+  /// Receiver: files that arrived before a lost connection and aren't
+  /// offered again, saved with the rest at the end.
+  final _earlier = <String, List<String>>{};
+
+  /// Receiver: a transfer from each device cut off a moment ago, waiting for
+  /// it to offer the rest.
+  final _interrupted =
+      <
+        String,
+        ({
+          String id,
+          List<OfferedFile> files,
+          int bytes,
+          DateTime since,
+          Timer timer,
+        })
+      >{};
+
+  LinksyEvent _aliased(LinksyEvent e) {
+    final transfer = switch (e) {
+      TransferStarted(:final transfer) ||
+      TransferProgress(:final transfer) ||
+      TransferComplete(:final transfer) ||
+      TransferFailed(:final transfer) ||
+      TransferRouted(:final transfer) => transfer,
+      _ => null,
+    };
+    if (transfer == null) return e;
+    var alias = _aliasOf[transfer];
+    if (alias == null && e is TransferStarted && e.peer != null) {
+      if (!e.incoming) {
+        // Offered again, before the offer returned: the rest of that one
+        final waiting = _resendingTo[e.peer!.id];
+        final had = waiting == null ? null : _offeredFiles[waiting.$1];
+        if (had != null && tailStart(had, e.files) != null) {
+          alias = _resendingTo.remove(e.peer!.id);
+        }
+      } else {
+        // Taken without asking (accepted on its own): carried on all the same
+        alias = _carryOn(e.peer!, transfer, e.files, rename: false);
+      }
+      if (alias != null) {
+        _aliasOf[transfer] = alias;
+        _resumedAs[alias.$1] = transfer;
+      }
+    }
+    if (alias == null) return e;
+    final (to, before) = alias;
+    if (e is TransferComplete || e is TransferFailed) {
+      _aliasOf.remove(transfer);
+      _resumedAs.remove(to);
+    }
+    return switch (e) {
+      TransferStarted() => TransferStarted(
+        to,
+        peer: e.peer,
+        incoming: e.incoming,
+        files: e.files,
+        total: e.total + before,
+        apps: e.apps,
+      ),
+      TransferProgress() => TransferProgress(
+        transfer: to,
+        bytes: e.bytes + before,
+        total: e.total + before,
+      ),
+      TransferComplete() => TransferComplete(
+        transfer: to,
+        saved: [...?_earlier.remove(to), ...e.saved],
+      ),
+      TransferFailed() => TransferFailed(transfer: to, reason: e.reason),
+      TransferRouted() => TransferRouted(
+        transfer: to,
+        route: e.route,
+        settingUpDirect: e.settingUpDirect,
+        whyNotDirect: e.whyNotDirect,
+      ),
+      _ => e,
+    };
+  }
+
+  /// A transfer of files that lost its connection, and can carry on: its
+  /// files known, no apps among them (their folders are named for the
+  /// offer), not an import, and not started again too often.
+  bool _canResume(String id, String reason) {
+    if (!lostConnection(reason) || _offeredFiles[id] == null) return false;
+    if (_imports.containsKey(id) || _transferApps.containsKey(id)) return false;
+    final a = _activity.where((a) => a.id == id).firstOrNull;
+    if (a == null || a.kind != ActivityKind.files) return false;
+    if ((_resumeTries[id] ?? 0) >= resumeTries) return false;
+    return a.incoming || _sends.containsKey(id);
+  }
+
+  void _resume(String id, String reason) {
+    final a = _activity.firstWhere((a) => a.id == id);
+    _resumeTries[id] = (_resumeTries[id] ?? 0) + 1;
+    LinksyPlatform.cancelNotice(id);
+    _update(id, (a) {
+      a
+        ..status = ActivityStatus.active
+        ..speed = 0
+        ..reason = tr.activityReconnecting;
+    });
+    if (a.incoming) {
+      _interrupted.remove(a.deviceId)?.timer.cancel();
+      _interrupted[a.deviceId] = (
+        id: id,
+        files: _offeredFiles[id]!,
+        bytes: a.bytes,
+        since: a.time,
+        timer: Timer(resumeWithin, () {
+          if (_interrupted[a.deviceId]?.id != id) return;
+          _interrupted.remove(a.deviceId);
+          _onEvent(TransferFailed(transfer: id, reason: reason));
+        }),
+      );
+    } else {
+      _resuming.add(id);
+      unawaited(_resend(id, a.deviceId, a.bytes, reason));
+    }
+  }
+
+  /// Sender: offers again, once the device is back, what it may not have
+  /// whole.
+  Future<void> _resend(
+    String id,
+    String deviceId,
+    int sent,
+    String reason,
+  ) async {
+    final files = _offeredFiles[id]!;
+    final (_, picked) = _sends[id]!;
+    final from = firstUnsure([for (final f in files) f.size], sent);
+    // Not what was picked (it can't be told apart): all of it, the receiver
+    // has what it has.
+    final (paths, before) = resendPaths(picked, files, from) ?? (picked, 0);
+    final until = DateTime.now().add(resumeWithin);
+    var wait = const Duration(seconds: 1);
+    while (DateTime.now().isBefore(until)) {
+      await Future<void>.delayed(wait);
+      wait = const Duration(seconds: 5);
+      if (!_resuming.contains(id)) return;
+      _resendingTo[deviceId] = (id, before);
+      try {
+        final next = await node.sendBundle(deviceId, paths, const []);
+        if (!_resuming.remove(id)) {
+          // Cancelled meanwhile
+          unawaited(node.cancel(next).catchError((Object _) {}));
+          return;
+        }
+        _resendingTo.remove(deviceId);
+        _aliasOf[next] = (id, before);
+        _resumedAs[id] = next;
+        _update(id, (a) => a.reason = null);
+        log.add(
+          'Transfer with ${_who(deviceId)}: offered again, '
+          '${paths.length} of ${picked.length} item(s)',
+        );
+        return;
+      } on LinksyException {
+        _resendingTo.remove(deviceId);
+      }
+    }
+    if (!_resuming.remove(id)) return;
+    _onEvent(TransferFailed(transfer: id, reason: reason));
+  }
+
+  /// Receiver: an offer that is the rest of a transfer cut off from the same
+  /// device is taken without asking, and carries on that transfer.
+  bool _continueIncoming(TransferRequest e) {
+    if (e.apps.isNotEmpty) return false;
+    final alias = _carryOn(e.from, e.transfer, e.files, rename: true);
+    if (alias == null) return false;
+    _aliasOf[e.transfer] = alias;
+    _resumedAs[alias.$1] = e.transfer;
+    log.add(
+      'Transfer with ${e.from.name}: carrying on, '
+      '${e.files.length} file(s) offered again',
+    );
+    unawaited(_run(() => node.respond(e.transfer, accept: true)));
+    return true;
+  }
+
+  /// Receiver: when [files] are the rest of what [from] was sending, takes
+  /// up that transfer and returns it and the bytes before them. With
+  /// [rename], before it's accepted: a file offered again that's here whole
+  /// already goes back to being its part, so the core checks it and nothing
+  /// of it is sent again (otherwise it would be saved twice, as "a (1).jpg").
+  (String, int)? _carryOn(
+    DeviceInfo from,
+    String transfer,
+    List<OfferedFile> files, {
+    required bool rename,
+  }) {
+    final w = _interrupted[from.id];
+    if (w == null) return null;
+    final start = tailStart(w.files, files);
+    if (start == null) return null;
+    _interrupted.remove(from.id);
+    w.timer.cancel();
+    final dir = settings?.downloadDir;
+    final earlier = <String>[];
+    final whole = wholeWithin(w.files, w.bytes);
+    for (var i = 0; dir != null && i < whole; i++) {
+      final path = '$dir/${w.files[i].path}';
+      try {
+        final file = File(path);
+        // Arrived for this transfer, whole, and not being resumed already
+        if (!file.existsSync() ||
+            file.lengthSync() != w.files[i].size ||
+            file.lastModifiedSync().isBefore(w.since) ||
+            File('$path.linksy-part').existsSync()) {
+          continue;
+        }
+        if (i < start) {
+          earlier.add(path);
+        } else if (rename) {
+          file.renameSync('$path.linksy-part');
+        }
+      } on FileSystemException {
+        continue;
+      }
+    }
+    _earlier[w.id] = earlier;
+    _update(w.id, (a) => a.reason = null);
+    var before = 0;
+    for (final f in w.files.take(start)) {
+      before += f.size;
+    }
+    return (w.id, before);
+  }
+
+  /// A transfer is over, for good: what was kept to carry it on goes.
+  void _ended(String id) {
+    _offeredFiles.remove(id);
+    _sends.remove(id);
+    _resumeTries.remove(id);
+    _earlier.remove(id);
+  }
+
+  void _onEvent(LinksyEvent raw) {
+    // A transfer that carries on after a lost connection is the one it
+    // continues, from where that one was.
+    final e = _aliased(raw);
+    if (e is TransferStarted && identical(e, raw)) {
+      _offeredFiles[e.transfer] = e.files;
+    }
     if (e is ClipboardReceived) _lastCopied = e.text;
     _logEvent(e);
     switch (e) {
@@ -2101,6 +2595,7 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
         final known = media[from.id];
         if (known == null || state.seq >= known.seq) {
           media[from.id] = state;
+          _logPlayers(from, state);
           _showMediaNotice();
           notifyListeners();
         }
@@ -2249,6 +2744,8 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
       case SettingsChanged(:final settings):
         this.settings = settings;
         notifyListeners();
+      case TransferRequest() when _continueIncoming(e):
+        break;
       case TransferRequest(
         :final transfer,
         :final from,
@@ -2362,6 +2859,7 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
         });
         _importEnded(transfer, ok: false, reason: reason);
       case TransferComplete(:final transfer, :final saved):
+        _ended(transfer);
         LinksyPlatform.cancelNotice(transfer);
         // An app's files stay where they are, to be installed from there.
         final apps = _transferApps[transfer] ?? const <AppInfo>[];
@@ -2388,7 +2886,11 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
         }
         _lastSample.remove(transfer);
         _routes.remove(transfer);
+      case TransferFailed(:final transfer, :final reason)
+          when _canResume(transfer, reason):
+        _resume(transfer, reason);
       case TransferFailed(:final transfer, :final reason):
+        _ended(transfer);
         LinksyPlatform.cancelNotice(transfer);
         _routes.remove(transfer);
         // An app's files have nothing left to be: they go.
@@ -2443,6 +2945,12 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
           unawaited(refreshKeyboard());
         }
         if (remotes.containsValue(session)) {
+          for (final id in [
+            for (final MapEntry(:key, :value) in remotes.entries)
+              if (value == session) key,
+          ]) {
+            _remoteGrace.remove(id)?.cancel();
+          }
           remotes.removeWhere((_, s) => s == session);
           notifyListeners();
         }
@@ -2466,6 +2974,9 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
     }
     switch (e) {
       case SessionRequest(kind: SessionKind.sound):
+        break;
+      // Carries on a transfer cut off: taken without asking.
+      case TransferRequest(:final transfer) when _aliasOf.containsKey(transfer):
         break;
       case PairingRequest() ||
           PairingFailed() ||
@@ -2521,7 +3032,12 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
       id: e.session,
       deviceId: e.peer.id,
       kind: switch (e.kind) {
-        _ when !e.sharing && e.kind != SessionKind.display =>
+        // A computer's screen watched from here. Not `input`: the phone
+        // doesn't share there either, but it's the touchpad (Discussion #79).
+        _
+            when !e.sharing &&
+                e.kind != SessionKind.display &&
+                e.kind != SessionKind.input =>
           ActivityKind.watch,
         SessionKind.screen => ActivityKind.screen,
         SessionKind.camera => ActivityKind.camera,
@@ -2622,6 +3138,7 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
     LinksyPlatform.sharedTo(deviceId);
     try {
       final transfer = await node.sendFiles(deviceId, paths);
+      _sends[transfer] = (deviceId, paths);
       // Progress events can race the return; only add if not seen yet.
       if (_activity.every((a) => a.id != transfer)) {
         _add(
@@ -2831,7 +3348,14 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
 
   /// The deck shows: the computer sends what it may do, then its state.
   Future<void> openDeck(String id) =>
-      node.deckOpen(id, open: true).catchError((Object _) {});
+      _dialing(id, () => node.deckOpen(id, open: true));
+
+  /// A deck's tiles work: a tap dials, so no link has to be up. Not once
+  /// the computer failed to answer.
+  bool deckLive(String id) {
+    final v = device(id);
+    return v != null && (v.connected || v.reachable && !_resting(id));
+  }
 
   /// …and stopped: it stops sending.
   Future<void> closeDeck(String id) =>
@@ -2856,8 +3380,18 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
           text: was?.text,
         );
         notifyListeners();
+        _dialing(id, () => node.deckRun(id, action)).then((went) {
+          if (went) return;
+          if (was == null) {
+            states.remove(action);
+          } else {
+            states[action] = was;
+          }
+          notifyListeners();
+        });
+        return;
       }
-      node.deckRun(id, action).catchError((Object _) {});
+      _dialing(id, () => node.deckRun(id, action));
       return;
     }
     final key = '$id $action';
@@ -2866,7 +3400,7 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
     bool send() {
       final v = _slid.remove(key);
       if (v == null) return false;
-      node.deckRun(id, action, value: v).catchError((Object _) {});
+      if (deckLive(id)) _dialing(id, () => node.deckRun(id, action, value: v));
       return true;
     }
 
@@ -2896,7 +3430,21 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
     });
   }
 
-  Future<String?> cancel(String transfer) => _run(() => node.cancel(transfer));
+  Future<String?> cancel(String transfer) {
+    // Waiting to carry on: nothing runs to stop, it just ends here.
+    if (_resuming.remove(transfer) ||
+        _interrupted.values.any((w) => w.id == transfer)) {
+      _interrupted.removeWhere((_, w) {
+        if (w.id != transfer) return false;
+        w.timer.cancel();
+        return true;
+      });
+      _onEvent(TransferFailed(transfer: transfer, reason: 'cancelled'));
+      return Future.value();
+    }
+    final live = _resumedAs[transfer] ?? transfer;
+    return _run(() => node.cancel(live));
+  }
 
   Future<String?> respond(String request, {required bool accept}) async {
     LinksyPlatform.cancelNotice(request);
@@ -3058,6 +3606,18 @@ class LinksyController extends ChangeNotifier with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    _memoryTimer?.cancel();
+    for (final w in _interrupted.values) {
+      w.timer.cancel();
+    }
+    _resuming.clear();
+    _volumeKeySub?.cancel();
+    for (final t in _volumeCooling.values) {
+      t.cancel();
+    }
+    for (final t in _remoteGrace.values) {
+      t.cancel();
+    }
     _sub?.cancel();
     _batterySub?.cancel();
     _callSub?.cancel();

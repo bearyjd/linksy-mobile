@@ -1,4 +1,4 @@
-//! Typing sessions: a computer typing on this phone (docs/protocol.md §4.26).
+//! Typing sessions: a computer typing on this phone (docs/protocol.md §4.27).
 //! Core hands over [`KeyInput`]s; they are turned into small byte messages
 //! and read by the Linksy Keyboard (Kotlin) through `NativeSession.read`,
 //! never through Dart. What is typed is never logged here.
