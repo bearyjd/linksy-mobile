@@ -4,6 +4,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
@@ -36,14 +37,30 @@ class ControlBridge(
     private val stopped = AtomicBoolean(false)
 
     private val reply = Messenger(Handler(thread.looper) { msg ->
-        if (msg.what == REPLY_BEGIN) client.onReply(msg.arg1)
+        // Anyone can be handed a Messenger: only the companion's process may answer.
+        if (msg.what == REPLY_BEGIN && ReplyGate.accepts(msg.sendingUid, companionUid())) client.onReply(msg.arg1)
         true
     })
+
+    private fun companionUid(): Int? = try {
+        context.packageManager.getPackageUid(CompanionPolicy.PACKAGE, 0)
+    } catch (_: PackageManager.NameNotFoundException) {
+        null
+    }
 
     /// One per bind: what an older connection says after a rebind is ignored.
     private fun connectionFor(gen: Int) = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName, binder: IBinder) {
-            handler.post { if (gen == generation) { service = Messenger(binder); client.onBound() } }
+            handler.post {
+                if (gen != generation) return@post
+                // Trust can change between the check before bind and now.
+                if (!ControlCompanion.trusted(context)) {
+                    client.onUntrusted()
+                    return@post
+                }
+                service = Messenger(binder)
+                client.onBound()
+            }
         }
 
         override fun onServiceDisconnected(name: ComponentName) {

@@ -64,7 +64,7 @@ class BridgeClient(
 
     fun stop() {
         if (state == State.Stopped) return
-        if (state == State.Active) releaseAndEnd()
+        if (state == State.Active || state == State.Beginning) releaseAndEnd()
         link.unbind()
         reset()
         state = State.Stopped
@@ -136,7 +136,7 @@ class BridgeClient(
     }
 
     private fun begin(renew: Boolean) {
-        if (renew) link.end()
+        if (renew) releaseAndEnd()
         heldButtons.clear()
         heldKeys.clear()
         renewing = renew

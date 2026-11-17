@@ -2,6 +2,7 @@ package app.linksy.control
 
 import org.json.JSONException
 import org.json.JSONObject
+import kotlin.math.abs
 
 /// One input message from a computer (`pointer`, `button`, `scroll`, `key`,
 /// `text`), checked and ready to hand to the companion.
@@ -35,6 +36,9 @@ sealed interface ControlMsg {
     companion object {
         const val MAX_TEXT = 4096
 
+        /// A scroll delta beyond this (either axis) is refused, not clamped.
+        const val MAX_SCROLL = 10_000.0
+
         /// Null for a type this phone doesn't act on, and for anything malformed.
         fun parse(json: String): ControlMsg? {
             if (!JsonShape.withinDepth(json)) return null
@@ -57,6 +61,7 @@ sealed interface ControlMsg {
                 "scroll" -> {
                     val dx = number(o, "dx") ?: return null
                     val dy = number(o, "dy") ?: return null
+                    if (abs(dx) > MAX_SCROLL || abs(dy) > MAX_SCROLL) return null
                     Scroll(dx, dy, o.opt("discrete") as? Boolean ?: false)
                 }
                 "key" -> {
