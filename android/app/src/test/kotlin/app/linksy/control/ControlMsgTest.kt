@@ -40,6 +40,20 @@ class ControlMsgTest {
         assertEquals(ControlMsg.Scroll(1.5, -3.0, false), parse("""{"type":"scroll","dx":1.5,"dy":-3}"""))
     }
 
+    @Test fun scrollDeltasAreCappedAtTenThousand() {
+        assertEquals(ControlMsg.Scroll(10000.0, -10000.0, false), parse("""{"type":"scroll","dx":10000,"dy":-10000}"""))
+        assertNull(parse("""{"type":"scroll","dx":0,"dy":10000.5}"""))
+        assertNull(parse("""{"type":"scroll","dx":-10001,"dy":0}"""))
+        assertNull(parse("""{"type":"scroll","dx":0,"dy":1e308}"""))
+    }
+
+    @Test fun scrollWithNonFiniteDeltasIsRefused() {
+        assertNull(parse("""{"type":"scroll","dx":0,"dy":NaN}"""))
+        assertNull(parse("""{"type":"scroll","dx":Infinity,"dy":0}"""))
+        assertNull(parse("""{"type":"scroll","dx":0,"dy":-Infinity}"""))
+        assertNull(parse("""{"type":"scroll","dx":0,"dy":1e999}"""))
+    }
+
     @Test fun key() {
         assertEquals(ControlMsg.Key(65307, true), parse("""{"type":"key","keysym":65307,"pressed":true}"""))
         assertEquals(ControlMsg.Key(0x010020AC, false), parse("""{"type":"key","keysym":16785580,"pressed":false}"""))

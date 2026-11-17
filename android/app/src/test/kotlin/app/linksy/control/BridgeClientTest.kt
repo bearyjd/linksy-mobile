@@ -374,6 +374,30 @@ class BridgeClientTest {
         assertEquals(BridgeStatus.Stopped to null, r.last)
     }
 
+    @Test fun renewalWhileHeldReleasesBeforeEnd() {
+        val r = Rig()
+        r.active()
+        r.client.send(ControlMsg.Button("left", true))
+        r.client.send(ControlMsg.Key(65, true))
+        r.link.sent.clear()
+        r.link.calls.clear()
+        r.now += BridgeClient.IDLE_RENEW_MS
+        r.client.send(move(0.1))
+        assertEquals(
+            listOf(ControlMsg.Button("left", false), ControlMsg.Key(65, false)).map { it.toJson() },
+            r.link.sent,
+        )
+        assertEquals(listOf("end", "begin"), r.link.calls)
+    }
+
+    @Test fun stopWhileBeginningSendsEnd() {
+        val r = Rig()
+        r.client.start()
+        r.client.onBound()
+        r.client.stop()
+        assertEquals(listOf("bind", "begin", "end", "unbind"), r.link.calls)
+    }
+
     @Test fun stopWithNothingHeldJustEnds() {
         val r = Rig()
         r.active()
@@ -382,12 +406,11 @@ class BridgeClientTest {
         assertEquals(listOf("bind", "begin", "end", "unbind"), r.link.calls)
     }
 
-    @Test fun stopBeforeTheReplyUnbindsWithoutAnEndToAnUnknownSession() {
+    @Test fun stopWhileBindingUnbindsWithoutAnEnd() {
         val r = Rig()
         r.client.start()
-        r.client.onBound()
         r.client.stop()
-        assertEquals("unbind", r.link.calls.last())
+        assertEquals(listOf("bind", "unbind"), r.link.calls)
         assertEquals(BridgeStatus.Stopped, r.status)
     }
 
